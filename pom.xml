@@ -31,13 +31,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apache.pulsar.ecosystem</groupId>
-  <artifactId>pulsar-io-template</artifactId>
+  <artifactId>pulsar-io-aws-eventbridge</artifactId>
   <version>0.0.1</version>
-  <name>Pulsar Ecosystem :: IO Connector :: Template Project</name>
-  <description>It is a project template for developing an Apache Pulsar connector</description>
+  <name>Pulsar Ecosystem :: IO Connector :: AWS EventBridge</name>
+  <description>It is a AWS EventBridge for developing an Apache Pulsar connector</description>
 
   <properties>
-    <java.version>1.8</java.version>
+    <java.version>17</java.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <redirectTestOutputToFile>true</redirectTestOutputToFile>
@@ -45,24 +47,25 @@
     <testRetryCount>2</testRetryCount>
 
     <!-- connector dependencies -->
-    <jackson.version>2.9.7</jackson.version>
-    <lombok.version>1.16.22</lombok.version>
-    <pulsar.version>2.2.0</pulsar.version>
+    <jackson.version>2.12.7.1</jackson.version>
+    <lombok.version>1.18.20</lombok.version>
+    <pulsar.version>2.11.0.4</pulsar.version>
 
     <!-- test dependencies -->
-    <junit.version>4.12</junit.version>
-    <mockito.version>2.22.0</mockito.version>
+    <junit.version>4.13.1</junit.version>
+    <mockito.version>3.11.2</mockito.version>
     <powermock.version>2.0.0-beta.5</powermock.version>
     <testcontainers.version>1.8.3</testcontainers.version>
+    <slf4j.version>1.7.25</slf4j.version>
 
     <!-- build plugin dependencies -->
     <license.plugin.version>3.0</license.plugin.version>
     <maven-checkstyle-plugin.version>3.0.0</maven-checkstyle-plugin.version>
-    <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
-    <maven-surefire-plugin.version>2.21.0</maven-surefire-plugin.version>
+    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
     <nifi.nar.plugin.version>1.2.0</nifi.nar.plugin.version>
     <puppycrawl.checkstyle.version>6.19</puppycrawl.checkstyle.version>
-    <spotbugs-maven-plugin.version>3.1.8</spotbugs-maven-plugin.version>
+    <spotbugs-maven-plugin.version>4.2.2</spotbugs-maven-plugin.version>
   </properties>
 
   <licenses>
@@ -76,11 +79,23 @@
   <!-- keep all the dependencies used by all modules here -->
   <dependencyManagement>
     <dependencies>
+      <!-- Pulsar Related -->
       <dependency>
-        <groupId>org.apache.pulsar</groupId>
-        <artifactId>pulsar-io-core</artifactId>
+        <groupId>io.streamnative</groupId>
+        <artifactId>pulsar-io-common</artifactId>
         <version>${pulsar.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.streamnative</groupId>
+        <artifactId>pulsar-client-original</artifactId>
+        <version>${pulsar.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.streamnative</groupId>
+        <artifactId>pulsar-common</artifactId>
+        <version>${pulsar.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
@@ -122,6 +137,11 @@
         <artifactId>testcontainers</artifactId>
         <version>${testcontainers.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -142,8 +162,12 @@
 
     <!-- runtime dependencies -->
     <dependency>
-      <groupId>org.apache.pulsar</groupId>
-      <artifactId>pulsar-io-core</artifactId>
+      <groupId>io.streamnative</groupId>
+      <artifactId>pulsar-io-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.streamnative</groupId>
+      <artifactId>pulsar-common</artifactId>
     </dependency>
 
     <dependency>
@@ -175,6 +199,16 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.streamnative</groupId>
+      <artifactId>pulsar-client-original</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
