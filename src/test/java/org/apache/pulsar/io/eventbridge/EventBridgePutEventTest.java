@@ -1,44 +1,55 @@
 package org.apache.pulsar.io.eventbridge;
 
-import com.amazonaws.services.eventbridge.AmazonEventBridge;
-import com.amazonaws.services.eventbridge.AmazonEventBridgeClient;
-import com.amazonaws.services.eventbridge.model.PutEventsRequest;
-import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
-import com.amazonaws.services.eventbridge.model.PutEventsResultEntry;
 import java.io.IOException;
-import java.util.Date;
-import org.junit.Test;
+import java.util.ArrayList;
+import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResultEntry;
+
+@Slf4j
 public class EventBridgePutEventTest {
 
     @Test
     public void testPutEvent() throws IOException {
-//        AmazonEventBridge awsEventBridge = AmazonEventBridgeClient.builder()
-//                .withCredentials()
-//                .withRegion()
-//                .withClientConfiguration()
-//                .build();
-//
-//        PutEventsRequestEntry requestEntry = new PutEventsRequestEntry()
-//                .withTime(new Date())
-//                .withSource("com.mycompany.myapp")
-//                .withDetailType("myDetailType")
-//                .withResources("resource1", "resource2")
-//                .withDetail("{ \"key1\": \"value1\", \"key2\": \"value2\" }");
-//
-//        PutEventsRequest request = new PutEventsRequest()
-//                .withEntries(requestEntry, requestEntry);
-//
-//        PutEventsResult result = awsEventBridge.putEvents(request);
-//
-//        for (PutEventsResultEntry resultEntry : result.getEntries()) {
-//            if (resultEntry.getEventId() != null) {
-//                System.out.println("Event Id: " + resultEntry.getEventId());
-//            } else {
-//                System.out.println("Injection failed with Error Code: " + resultEntry.getErrorCode());
-//            }
-//        }
+        // use this custom set access relate config
+        // EventBridgeClient.builder().credentialsProvider(AwsCredentialsProvider).build();
+
+        EventBridgeClient eventBridgeClient = EventBridgeClient.builder().region(Region.AP_NORTHEAST_1).build();
+
+        log.info("test info ssss");
+
+        PutEventsRequestEntry requestEntry = PutEventsRequestEntry.builder()
+                .resources("resource1", "resource2")
+                .source("com.mycompany.myapp")
+                .detailType("myDetailType")
+                .detail("{ \"key1\": \"value1\", \"key2\": \"value2\" }")
+                .build();
+
+        List<PutEventsRequestEntry> requestEntries = new ArrayList<
+                PutEventsRequestEntry>();
+        requestEntries.add(requestEntry);
+
+        PutEventsRequest eventsRequest = PutEventsRequest.builder()
+                .entries(requestEntries)
+                .build();
+
+        PutEventsResponse result = eventBridgeClient.putEvents(eventsRequest);
+
+        for (PutEventsResultEntry resultEntry : result.entries()) {
+            if (resultEntry.eventId() != null) {
+                System.out.println("Event Id: " + resultEntry.eventId());
+            } else {
+                System.out.println("PutEvents failed with Error Code: " + resultEntry.errorCode());
+            }
+        }
+
     }
 
 }
