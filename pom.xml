@@ -96,6 +96,15 @@
         <version>${pulsar.version}</version>
       </dependency>
 
+      <!-- AWS -->
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-bom</artifactId>
+        <version>1.12.448</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
@@ -169,7 +178,10 @@
       <groupId>io.streamnative</groupId>
       <artifactId>pulsar-common</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-eventbridge</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -229,7 +241,7 @@
               <compilerArg>-Xlint:unchecked</compilerArg>
               <!-- https://issues.apache.org/jira/browse/MCOMPILER-205 -->
               <compilerArg>-Xpkginfo:always</compilerArg>
-	        </compilerArgs>
+            </compilerArgs>
           </configuration>
         </plugin>
         <!-- test -->
@@ -338,7 +350,7 @@
     </pluginManagement>
 
     <plugins>
-      <!-- compile --> 
+      <!-- compile -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
