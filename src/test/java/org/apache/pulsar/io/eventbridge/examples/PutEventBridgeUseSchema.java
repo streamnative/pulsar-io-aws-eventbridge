@@ -25,7 +25,7 @@ import software.amazon.awssdk.services.eventbridge.model.PutEventsResultEntry;
  *
  */
 @Slf4j
-public class HelloEventBridge {
+public class PutEventBridgeUseSchema {
 
     public static void main(String[] args) {
         // Frequently expired.
@@ -36,44 +36,22 @@ public class HelloEventBridge {
                 .credentialsProvider(StaticCredentialsProvider.create(awsSessionCredentials))
                 .build();
 
-        listBuses(eventBrClient);
         putEvent(eventBrClient, "baodi.shi@streamnative.io");
 
         eventBrClient.close();
-    }
-
-    public static void listBuses(EventBridgeClient eventBrClient) {
-        try {
-            ListEventBusesRequest busesRequest = ListEventBusesRequest.builder()
-                    .limit(10)
-                    .build();
-
-            ListEventBusesResponse response = eventBrClient.listEventBuses(busesRequest);
-            List<EventBus> buses = response.eventBuses();
-            for (EventBus bus : buses) {
-                log.info("The name of the event bus is: " + bus.name());
-                log.info("The ARN of the event bus is: " + bus.arn());
-            }
-
-        } catch (EventBridgeException e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
-        }
     }
 
     public static void putEvent(EventBridgeClient eventBrClient, String email) {
         String json = "{" +
                 "\"UserEmail\": \""+email+"\"," +
                 "\"Message\": \"baodi-test6\", " +
-                "\"UtcTime\": \"Now.\"" +
+                "\"balance\": 100.25, " +
+                "\"age\": 28" +
                 "}";
 
         System.out.println(json);
 
         PutEventsRequestEntry entry = PutEventsRequestEntry.builder()
-                // why set resources send not ok??? and if send specify resource failed, and then send default event bus.
-//                .resources("aws:events:ap-northeast-1:598203581484:event-bus/baodi-test")
-                // need send more resource???
                 .eventBusName("baodi-test")
                 .source("baodi-test-source")
                 .detail(json)
@@ -86,6 +64,7 @@ public class HelloEventBridge {
                 // https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevents.html
                 .entries(entry)
                 .build();
+
 
         PutEventsResponse putEventsResponse = eventBrClient.putEvents(eventsRequest);
         for (PutEventsResultEntry resultEntry: putEventsResponse.entries()) {
