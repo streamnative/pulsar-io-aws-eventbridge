@@ -1,0 +1,37 @@
+name: pulsar-io-aws-eventbridge unit tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: License check
+        run: mvn license:check
+
+      - name: Build with Maven skipTests
+        run: mvn clean install -DskipTests
+
+      - name: Style check
+        run: mvn checkstyle:check
+
+      - name: Spotbugs check
+        run: mvn spotbugs:check
+
+      - name: Run unit test
+        run: mvn test -DfailIfNoTests=false

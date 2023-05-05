@@ -1,0 +1,91 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.pulsar.io.eventbridge.sink;
+
+import static org.apache.pulsar.io.eventbridge.sink.EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE;
+import static org.mockito.Mockito.mock;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import org.apache.pulsar.io.core.SinkContext;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+/**
+ * EventBridge config test.
+ */
+public class EventBridgeConfigTest {
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadRequiredNotSet() {
+        // Test not set required config, will exception.
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("batchMaxSize", 100);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
+    }
+
+    @Test
+    public void testLoadSuccess() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("batchMaxSize", 100);
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
+        EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(configMap, mock(SinkContext.class));
+        Assert.assertEquals("testEventBusName", eventBridgeConfig.getEventBusName());
+        Assert.assertEquals(100, eventBridgeConfig.getBatchMaxSize());
+        Assert.assertEquals("test-region", eventBridgeConfig.getRegion());
+        Assert.assertEquals("test-arn", eventBridgeConfig.getEventBusResourceName());
+        // assert set default value.
+        Assert.assertEquals(1000, eventBridgeConfig.getBatchPendingQueueSize());
+        Assert.assertEquals(64000, eventBridgeConfig.getBatchMaxBytesSize());
+        Assert.assertEquals(5000, eventBridgeConfig.getBatchMaxTimeMs());
+        Assert.assertEquals(100, eventBridgeConfig.getMaxRetryCount());
+        Assert.assertEquals(1000, eventBridgeConfig.getIntervalRetryTimeMs());
+        Set<String> metaDataField = eventBridgeConfig.getMetaDataFields();
+        Assert.assertTrue(metaDataField.contains("message_id"));
+        Assert.assertTrue(metaDataField.contains("event_time"));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadVerifyFailed() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
+        configMap.put("batchMaxSize", 1000);
+        configMap.put("batchPendingQueueSize", 100);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
+    }
+
+    @Test
+    public void testLoadRestBatchMaxBytesSize() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
+        configMap.put("batchMaxBytesSize", DEFAULT_MAX_BATCH_BYTES_SIZE * 2);
+        EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(configMap, mock(SinkContext.class));
+        Assert.assertEquals(eventBridgeConfig.getBatchMaxBytesSize(), DEFAULT_MAX_BATCH_BYTES_SIZE);
+        configMap.put("batchMaxBytesSize", 0);
+        EventBridgeConfig eventBridgeConfig2 = EventBridgeConfig.load(configMap, mock(SinkContext.class));
+        Assert.assertEquals(eventBridgeConfig2.getBatchMaxBytesSize(), DEFAULT_MAX_BATCH_BYTES_SIZE);
+    }
+}
