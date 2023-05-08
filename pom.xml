@@ -316,7 +316,7 @@
               <exclude>NOTICE</exclude>
               <exclude>.github/**</exclude>
               <exclude>**/*.template</exclude>
-              <exclude>.ci/**</exclude>
+              <exclude>.integrations/**</exclude>
               <exclude>.java-version</exclude>
               <exclude>scripts/</exclude>
             </excludes>

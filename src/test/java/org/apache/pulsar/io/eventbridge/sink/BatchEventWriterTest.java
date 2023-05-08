@@ -64,7 +64,6 @@ public class BatchEventWriterTest {
 
             @Override
             public void ack() {
-                System.out.println("Ack message...");
                 countDownLatch.countDown();
             }
         };
@@ -103,7 +102,6 @@ public class BatchEventWriterTest {
                 Assert.assertEquals(data, entry.detail());
                 Assert.assertEquals(sinkName, entry.source());
                 Assert.assertEquals(topicName, entry.detailType());
-
             }
             return putEventsResponse;
         });
@@ -112,7 +110,8 @@ public class BatchEventWriterTest {
         Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
 
         BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
-        for (int i = 0; i < 10; i++) {
+        // Send one more to make sure there is no more flush.
+        for (int i = 0; i < 10 + 1; i++) {
             batchEventWriter.append(data, record);
         }
         countDownLatch.await();

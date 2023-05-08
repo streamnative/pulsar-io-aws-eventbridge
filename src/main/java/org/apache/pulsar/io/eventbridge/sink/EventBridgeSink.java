@@ -19,6 +19,7 @@
 package org.apache.pulsar.io.eventbridge.sink;
 
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.schema.GenericObject;
 import org.apache.pulsar.common.functions.FunctionConfig;
 import org.apache.pulsar.common.io.SinkConfig;
@@ -33,6 +34,7 @@ import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 /**
  * Aws Event Bridge Sink impl.
  */
+@Slf4j
 public class EventBridgeSink implements Sink<GenericObject> {
 
     private BatchEventWriter batchEventWriter;

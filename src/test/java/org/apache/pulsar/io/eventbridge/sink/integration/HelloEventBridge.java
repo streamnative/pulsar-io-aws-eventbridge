@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.pulsar.io.eventbridge.sink.examples;
+package org.apache.pulsar.io.eventbridge.sink.integration;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,7 +41,7 @@ import software.amazon.awssdk.services.eventbridge.model.PutEventsResultEntry;
  * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/get-started.html
  */
 @Slf4j
-public class HelloEventBridgeAuth {
+public class HelloEventBridge {
 
     public static void main(String[] args) {
 
@@ -91,7 +91,7 @@ public class HelloEventBridgeAuth {
         PutEventsRequestEntry entry = PutEventsRequestEntry.builder()
                 .eventBusName("baodi-test")
                 .resources("arn:aws:events:ap-northeast-1:598203581484:event-bus/baodi-test")
-                .source("baodi-test-source")
+                .source("test-aws-eventbridge")
                 .detail(json)
                 .detailType("ExampleType")
                 .time(Instant.now())

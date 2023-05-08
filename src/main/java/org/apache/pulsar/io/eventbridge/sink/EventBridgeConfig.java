@@ -104,18 +104,18 @@ public class EventBridgeConfig implements Serializable {
             help = "The Event Bus name.")
     private String eventBusName;
 
-    @FieldDoc(required = false,
-            defaultValue = "event_time,message_id",
-            help = "The meta data field will add to the event. separate multiple fields with commas."
-                    + "optional: schema_version| partition | event_time | publish_time"
-                    + "message_id | sequence_id | producer_name | key | properties")
-    private String metaDataField;
-
     @FieldDoc(
-            required = true,
+            required = false,
             defaultValue = "",
             help = "The Event Bus Aws resource name(ARN).")
     private String eventBusResourceName;
+
+    @FieldDoc(required = false,
+            defaultValue = "event_time,message_id",
+            help = "The metadata field will add to the event. separate multiple fields with commas."
+                    + "optional: schema_version| partition | event_time | publish_time"
+                    + "message_id | sequence_id | producer_name | key | properties")
+    private String metaDataField;
 
     @FieldDoc(required = false,
             defaultValue = "1000",
@@ -123,12 +123,12 @@ public class EventBridgeConfig implements Serializable {
     private int batchPendingQueueSize;
 
     @FieldDoc(required = false,
-            defaultValue = "100",
-            help = "Maximum number of batch messages.")
+            defaultValue = "10",
+            help = "Maximum number of batch messages. Member must less than or equal to 10(AWS Required)")
     private long batchMaxSize;
 
     @FieldDoc(required = false,
-            defaultValue = "64000",
+            defaultValue = "640",
             help = "Maximum number of batch bytes payload size. This value cannot be greater than 512KB.")
     private long batchMaxBytesSize;
 
@@ -155,6 +155,9 @@ public class EventBridgeConfig implements Serializable {
     }
 
     public void verifyConfig() {
+        if (batchMaxSize > 10) {
+            throw new IllegalArgumentException("batchMaxSize must less than or equal to 10(AWS Required)");
+        }
         if (batchMaxBytesSize <= 0 || batchMaxBytesSize > DEFAULT_MAX_BATCH_BYTES_SIZE) {
             log.warn("batchMaxBytesSize set invalid(The rule: 0 < batchMaxBytesSize < 256000), using default value {}",
                     DEFAULT_MAX_BATCH_BYTES_SIZE);

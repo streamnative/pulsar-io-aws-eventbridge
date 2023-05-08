@@ -45,17 +45,17 @@ public class EventBridgeConfigTest {
     public void testLoadSuccess() {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("eventBusName", "testEventBusName");
-        configMap.put("batchMaxSize", 100);
+        configMap.put("batchMaxSize", 10);
         configMap.put("region", "test-region");
         configMap.put("eventBusResourceName", "test-arn");
         EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(configMap, mock(SinkContext.class));
         Assert.assertEquals("testEventBusName", eventBridgeConfig.getEventBusName());
-        Assert.assertEquals(100, eventBridgeConfig.getBatchMaxSize());
+        Assert.assertEquals(10, eventBridgeConfig.getBatchMaxSize());
         Assert.assertEquals("test-region", eventBridgeConfig.getRegion());
         Assert.assertEquals("test-arn", eventBridgeConfig.getEventBusResourceName());
         // assert set default value.
         Assert.assertEquals(1000, eventBridgeConfig.getBatchPendingQueueSize());
-        Assert.assertEquals(64000, eventBridgeConfig.getBatchMaxBytesSize());
+        Assert.assertEquals(640, eventBridgeConfig.getBatchMaxBytesSize());
         Assert.assertEquals(5000, eventBridgeConfig.getBatchMaxTimeMs());
         Assert.assertEquals(100, eventBridgeConfig.getMaxRetryCount());
         Assert.assertEquals(1000, eventBridgeConfig.getIntervalRetryTimeMs());
@@ -71,7 +71,7 @@ public class EventBridgeConfigTest {
         configMap.put("region", "test-region");
         configMap.put("eventBusResourceName", "test-arn");
         configMap.put("batchMaxSize", 1000);
-        configMap.put("batchPendingQueueSize", 100);
+        configMap.put("batchPendingQueueSize", 1000);
         EventBridgeConfig.load(configMap, mock(SinkContext.class));
     }
 
