@@ -69,7 +69,7 @@ public class EventBridgeSinkTestIntegration {
                         .blockIfQueueFull(true)
                         .create();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             ProtobufMessage.TestMessage message =
                     ProtobufMessage.TestMessage.newBuilder().setStringField("msg: " + i).setDoubleField(20.0).build();
             producer.newMessage()

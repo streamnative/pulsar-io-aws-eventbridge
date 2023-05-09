@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.pulsar.io.common.IOConfigUtils;
 import org.apache.pulsar.io.core.SinkContext;
 import org.apache.pulsar.io.core.annotations.FieldDoc;
-import org.apache.pulsar.io.eventbridge.sink.exception.EBConnectorDirectFailException;
 import org.apache.pulsar.io.eventbridge.sink.utils.MetaDataUtils;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -159,15 +158,15 @@ public class EventBridgeConfig implements Serializable {
             throw new IllegalArgumentException("batchMaxSize must less than or equal to 10(AWS Required)");
         }
         if (batchMaxBytesSize <= 0 || batchMaxBytesSize > DEFAULT_MAX_BATCH_BYTES_SIZE) {
-            log.warn("batchMaxBytesSize set invalid(The rule: 0 < batchMaxBytesSize < 256000), using default value {}",
-                    DEFAULT_MAX_BATCH_BYTES_SIZE);
-            this.batchMaxBytesSize = DEFAULT_MAX_BATCH_BYTES_SIZE;
+            throw new IllegalArgumentException(
+                    "batchMaxBytesSize must greater 0 and less than or equal to 256KB(AWS Required),"
+                            + " Refer: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html");
         }
         if (batchPendingQueueSize <= batchMaxSize) {
             throw new IllegalArgumentException("batchPendingQueueSize must be greater than batchMaxSize");
         }
-        if (maxRetryCount <= 0) {
-            throw new IllegalArgumentException("maxRetryCount must be greater than 0");
+        if (maxRetryCount < 0) {
+            throw new IllegalArgumentException("maxRetryCount must be greater than or equal 0");
         }
         if (intervalRetryTimeMs < 0) {
             throw new IllegalArgumentException("intervalRetryTimeMs must be greater than or equal to 0");
@@ -183,11 +182,11 @@ public class EventBridgeConfig implements Serializable {
                         .map(field -> {
                             String trimField = field.trim();
                             if (trimField.contains(" ")) {
-                                throw new EBConnectorDirectFailException(
+                                throw new IllegalArgumentException(
                                         "There cannot be spaces in the field: " + metaDataField);
                             }
                             if (!MetaDataUtils.isSupportMetaData(trimField)) {
-                                throw new EBConnectorDirectFailException(
+                                throw new IllegalArgumentException(
                                         "The field: " + trimField + " is not supported");
                             }
                             return trimField;

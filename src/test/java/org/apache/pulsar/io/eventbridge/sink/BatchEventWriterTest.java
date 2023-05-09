@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.SneakyThrows;
 import org.apache.pulsar.client.api.schema.GenericObject;
@@ -84,7 +85,9 @@ public class BatchEventWriterTest {
 
     @SneakyThrows
     @Test(dataProvider = "batchFlush")
-    public void testAppendBase(long batchMaxSize, long batchMaxByteSize, long batchMaxTimeMs) {
+    public void testAppendBase(long batchMaxSize, long batchMaxByteSize, long batchMaxTimeMs, int expectedFlushCount) {
+        // clear mock cache.
+        Mockito.clearAllCaches();
 
         EventBridgeConfig
                 eventBridgeConfig = getEventBridgeConfig(batchMaxSize, batchMaxByteSize, batchMaxTimeMs);
@@ -93,17 +96,18 @@ public class BatchEventWriterTest {
         String topicName = "test-topic";
 
         EventBridgeClient eventBridgeClient = mock(EventBridgeClient.class);
-        PutEventsResponse putEventsResponse = PutEventsResponse.builder().failedEntryCount(0).build();
         when(eventBridgeClient.putEvents((PutEventsRequest) Mockito.any())).then(putEventRequest -> {
             PutEventsRequest putEventsRequest = putEventRequest.getArgument(0);
+            List<PutEventsResultEntry> resultEntryList = new ArrayList<>();
             for (PutEventsRequestEntry entry : putEventsRequest.entries()) {
                 Assert.assertEquals(eventBridgeConfig.getEventBusName(), entry.eventBusName());
                 Assert.assertEquals(eventBridgeConfig.getEventBusResourceName(), entry.resources().get(0));
                 Assert.assertEquals(data, entry.detail());
                 Assert.assertEquals(sinkName, entry.source());
                 Assert.assertEquals(topicName, entry.detailType());
+                resultEntryList.add(PutEventsResultEntry.builder().build());
             }
-            return putEventsResponse;
+            return PutEventsResponse.builder().failedEntryCount(0).entries(resultEntryList).build();
         });
 
         CountDownLatch countDownLatch = new CountDownLatch(10);
@@ -116,21 +120,23 @@ public class BatchEventWriterTest {
         }
         countDownLatch.await();
         Assert.assertEquals(0, countDownLatch.getCount());
-        verify(eventBridgeClient, Mockito.times(1)).putEvents((PutEventsRequest) Mockito.any());
+        verify(eventBridgeClient, Mockito.times(expectedFlushCount)).putEvents((PutEventsRequest) Mockito.any());
     }
 
     @DataProvider(name = "batchFlush")
     public Object[][] batchFlushProvider() {
         return new Object[][]{
-                {10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1},
-                {-1, 650, -1},
-                {-1, 256000, 500}
+                // Testing when a single message is greater than batchMaxByteSize also triggers a refresh
+                {-1, 50, -1, 11},
+                {10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1, 1},
+                {-1, 650, 500, 2},
+                {-1, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, 500, 1},
         };
     }
 
     @SneakyThrows
     @Test
-    public void testAppendFailedRetry() {
+    public void testAppendFailedAndRetrySuccess() {
         EventBridgeConfig
                 eventBridgeConfig = getEventBridgeConfig(10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1);
         eventBridgeConfig.setMaxRetryCount(10);
@@ -144,10 +150,17 @@ public class BatchEventWriterTest {
         int failedNum = 10;
         AtomicInteger mockFailedNum = new AtomicInteger(failedNum);
         when(eventBridgeClient.putEvents((PutEventsRequest) Mockito.any())).then(putEventRequest -> {
+            PutEventsRequest putEventsRequest = putEventRequest.getArgument(0);
+
+            List<PutEventsRequestEntry> requestEntries = putEventsRequest.entries();
             List<PutEventsResultEntry> resultEntries = new ArrayList<>();
+            // mock failed entries
             for (int i = 0; i < mockFailedNum.get(); i++) {
-                PutEventsResultEntry resultEntry = PutEventsResultEntry.builder().errorCode("mock-error").build();
-                resultEntries.add(resultEntry);
+                resultEntries.add(PutEventsResultEntry.builder().errorCode("mock-failed").build());
+            }
+            // mock success entries
+            for (int i = mockFailedNum.get(); i < requestEntries.size(); i++) {
+                resultEntries.add(PutEventsResultEntry.builder().build());
             }
             return PutEventsResponse.builder()
                     .failedEntryCount(mockFailedNum.getAndDecrement())
@@ -168,8 +181,56 @@ public class BatchEventWriterTest {
     }
 
     @SneakyThrows
+    @Test
+    public void testAppendFailedAndRetryFiled() {
+        EventBridgeConfig
+                eventBridgeConfig = getEventBridgeConfig(10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1);
+        eventBridgeConfig.setMaxRetryCount(10);
+        eventBridgeConfig.setIntervalRetryTimeMs(0);
+
+        String sinkName = "test-sink";
+        String data = "{\"test-json\": \"test-value\"}";
+        String topicName = "test-topic";
+
+        EventBridgeClient eventBridgeClient = mock(EventBridgeClient.class);
+        int failedNum = 5;
+        AtomicInteger mockFailedNum = new AtomicInteger(failedNum);
+        when(eventBridgeClient.putEvents((PutEventsRequest) Mockito.any())).then(putEventRequest -> {
+            PutEventsRequest putEventsRequest = putEventRequest.getArgument(0);
+
+            List<PutEventsRequestEntry> requestEntries = putEventsRequest.entries();
+            List<PutEventsResultEntry> resultEntries = new ArrayList<>();
+            // mock failed entries
+            for (int i = 0; i < mockFailedNum.get(); i++) {
+                resultEntries.add(PutEventsResultEntry.builder().errorCode("mock-failed").build());
+            }
+            // mock success entries
+            for (int i = mockFailedNum.get(); i < requestEntries.size(); i++) {
+                resultEntries.add(PutEventsResultEntry.builder().build());
+            }
+            return PutEventsResponse.builder()
+                    .failedEntryCount(mockFailedNum.get())
+                    .entries(resultEntries)
+                    .build();
+        });
+
+        CountDownLatch countDownLatch = new CountDownLatch(10);
+        Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
+
+        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
+        for (int i = 0; i < 10; i++) {
+            batchEventWriter.append(data + i, record);
+        }
+        countDownLatch.await(500, TimeUnit.MILLISECONDS);
+        // success 5 entries, failed 5 entries, to assert will partially ack record.
+        Assert.assertEquals(5, countDownLatch.getCount());
+        verify(eventBridgeClient, Mockito.times((int) eventBridgeConfig.getMaxRetryCount() + 1)).putEvents(
+                (PutEventsRequest) Mockito.any());
+    }
+
+    @SneakyThrows
     @Test(expectedExceptions = EBConnectorDirectFailException.class)
-    public void testSingleMessageLarge() {
+    public void testSingleMessageLargeAWSLimit() {
         EventBridgeConfig
                 eventBridgeConfig = getEventBridgeConfig(10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1);
         EventBridgeClient eventBridgeClient = mock(EventBridgeClient.class);
@@ -178,4 +239,5 @@ public class BatchEventWriterTest {
         Record<GenericObject> record = getGenericObjectRecord("test-topic", null);
         batchEventWriter.append(new String(bytes), record);
     }
+
 }

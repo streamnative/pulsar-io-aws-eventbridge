@@ -18,7 +18,6 @@
  */
 package org.apache.pulsar.io.eventbridge.sink;
 
-import static org.apache.pulsar.io.eventbridge.sink.EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE;
 import static org.mockito.Mockito.mock;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,27 +64,52 @@ public class EventBridgeConfigTest {
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testLoadVerifyFailed() {
+    public void testLoadVerifyFailedBatchMaxSizeGreaterPendingQueueSize() {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("eventBusName", "testEventBusName");
         configMap.put("region", "test-region");
         configMap.put("eventBusResourceName", "test-arn");
-        configMap.put("batchMaxSize", 1000);
-        configMap.put("batchPendingQueueSize", 1000);
+        configMap.put("batchMaxSize", 10);
+        configMap.put("batchPendingQueueSize", 5);
         EventBridgeConfig.load(configMap, mock(SinkContext.class));
     }
 
-    @Test
-    public void testLoadRestBatchMaxBytesSize() {
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadVerifyFailedBatchMaxSizeInvalid() {
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("eventBusName", "testEventBusName");
         configMap.put("region", "test-region");
         configMap.put("eventBusResourceName", "test-arn");
-        configMap.put("batchMaxBytesSize", DEFAULT_MAX_BATCH_BYTES_SIZE * 2);
-        EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(configMap, mock(SinkContext.class));
-        Assert.assertEquals(eventBridgeConfig.getBatchMaxBytesSize(), DEFAULT_MAX_BATCH_BYTES_SIZE);
+        configMap.put("batchMaxSize", 100);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadVerifyFailedBatchMaxBytesSizeInvalid() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
         configMap.put("batchMaxBytesSize", 0);
-        EventBridgeConfig eventBridgeConfig2 = EventBridgeConfig.load(configMap, mock(SinkContext.class));
-        Assert.assertEquals(eventBridgeConfig2.getBatchMaxBytesSize(), DEFAULT_MAX_BATCH_BYTES_SIZE);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadVerifyFailedRetryCountInvalid() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
+        configMap.put("retryCount", -1);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
+    }
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testLoadVerifyFailedIntervalRetryTimeMsInvalid() {
+        Map<String, Object> configMap = new HashMap<>();
+        configMap.put("eventBusName", "testEventBusName");
+        configMap.put("region", "test-region");
+        configMap.put("eventBusResourceName", "test-arn");
+        configMap.put("intervalRetryTimeMs", -1);
+        EventBridgeConfig.load(configMap, mock(SinkContext.class));
     }
 }

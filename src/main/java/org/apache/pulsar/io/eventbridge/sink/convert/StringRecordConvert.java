@@ -69,11 +69,11 @@ public class StringRecordConvert extends AbstractRecordConvert {
             }
         } else {
             try {
-                map.put(USER_DATA_KEY, mapper.readValue(parser, TYPEREF));
+                map.put(USER_DATA_KEY, mapper.readValue(parser, ARRAY_TYPEREF));
             } catch (MismatchedInputException e) {
                 log.info("Use List<Map<String, Object>> read json failed, try to use Map<String, Object>");
                 priorityTryTyperef = TYPEREF;
-                map.put(USER_DATA_KEY, mapper.readValue(parser, ARRAY_TYPEREF));
+                map.put(USER_DATA_KEY, mapper.readValue(parser, TYPEREF));
             }
         }
         return map;

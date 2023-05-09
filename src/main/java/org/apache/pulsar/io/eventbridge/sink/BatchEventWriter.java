@@ -33,8 +33,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.pulsar.client.api.schema.GenericObject;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.io.eventbridge.sink.exception.EBConnectorDirectFailException;
@@ -55,13 +56,21 @@ public class BatchEventWriter implements Closeable {
     private final EventBridgeConfig eventBridgeConfig;
     private final EventBridgeClient eventBridgeClient;
     private final ScheduledExecutorService flushExecutor;
-    private final ArrayBlockingQueue<Pair<PutEventsRequestEntry, Record<GenericObject>>> pendingFlushEntryQueue;
+    private final ArrayBlockingQueue<PendingFlushRequest> pendingFlushEntryQueue;
 
     private final AtomicLong currentBatchSize = new AtomicLong(0);
     private final AtomicLong currentBatchByteSize = new AtomicLong(0);
     private final AtomicBoolean isFlushRunning = new AtomicBoolean();
     private final String sinkName;
     private volatile long lastFlushTime;
+
+    @Getter
+    @Builder
+    static class PendingFlushRequest {
+        private PutEventsRequestEntry putEventsResultEntry;
+        private Record<GenericObject> record;
+        private long entrySize;
+    }
 
     public BatchEventWriter(String sinkName, EventBridgeConfig eventBridgeConfig, EventBridgeClient eventBridgeClient) {
         this.sinkName = sinkName;
@@ -95,7 +104,8 @@ public class BatchEventWriter implements Closeable {
                             + ". More details refer: https://docs.aws.amazon"
                             + ".com/eventbridge/latest/userguide/eb-putevent-size.html");
         }
-        pendingFlushEntryQueue.put(Pair.of(entry, record));
+        pendingFlushEntryQueue.put(
+                PendingFlushRequest.builder().putEventsResultEntry(entry).record(record).entrySize(entrySize).build());
         currentBatchSize.incrementAndGet();
         currentBatchByteSize.addAndGet(entrySize);
         tryFlush();
@@ -110,8 +120,6 @@ public class BatchEventWriter implements Closeable {
 
         if (isFlushByBatchMaxSize || isFlushByBatchMaxBytesSize || isFlushByBatchMaxTimeMs) {
             if (isFlushRunning.compareAndSet(false, true)) {
-                log.info("Start flush events, currentBatchSize: {}, currentBatchByteSize: {} QueueSize: {}",
-                        currentBatchSize.get(), currentBatchByteSize.get(), pendingFlushEntryQueue.size());
                 flushExecutor.submit(() -> {
                     try {
                         flush();
@@ -136,40 +144,67 @@ public class BatchEventWriter implements Closeable {
                     currentBatchSize.get(), currentBatchByteSize.get());
             return;
         }
+        log.info("Start flush events, currentBatchSize: {}, currentBatchByteSize: {} ", currentBatchSize.get(),
+                currentBatchByteSize.get());
+
         // The pop messages cannot be larger than batchBytes and batchSize.
         // In any case, as long as there is a message in the queue, we will first add one to it.
+        long popEventSize = 0;
         long popEventBytesSize = 0;
-        List<PutEventsRequestEntry> putEventsRequestEntryList = new ArrayList<>();
-        List<Record<GenericObject>> pendingAckRecords = new ArrayList<>();
-        while (!pendingFlushEntryQueue.isEmpty()
-                && (eventBridgeConfig.getBatchMaxSize() < 0
-                || pendingAckRecords.size() < eventBridgeConfig.getBatchMaxSize())
-                && popEventBytesSize < eventBridgeConfig.getBatchMaxBytesSize()) {
-            Pair<PutEventsRequestEntry, Record<GenericObject>> pollPair = pendingFlushEntryQueue.poll();
-            popEventBytesSize += calcSize(pollPair.getLeft());
-            putEventsRequestEntryList.add(pollPair.getLeft());
-            pendingAckRecords.add(pollPair.getRight());
-        }
-        log.info("Actual flush events, size: {}, bytes size: {}", putEventsRequestEntryList.size(), popEventBytesSize);
+        List<PendingFlushRequest> pendingFlushRequestList = new ArrayList<>();
+        PendingFlushRequest peekFlushRequest;
+        do {
+            PendingFlushRequest poolFlushRequest = pendingFlushEntryQueue.poll();
+            pendingFlushRequestList.add(poolFlushRequest);
+            popEventSize++;
+            popEventBytesSize += poolFlushRequest.entrySize;
+            peekFlushRequest = pendingFlushEntryQueue.peek();
+        } while (peekFlushRequest != null && (eventBridgeConfig.getBatchMaxSize() < 0
+                || pendingFlushRequestList.size() < eventBridgeConfig.getBatchMaxSize())
+                && popEventBytesSize + peekFlushRequest.entrySize < eventBridgeConfig.getBatchMaxBytesSize());
+
+        log.info("Actual flush events, size: {}, bytes size: {}", popEventSize, popEventBytesSize);
         try {
-            long retryNum = 0;
-            // Send entry to AWS EventBridge.
-            PutEventsRequest putEventsRequest = PutEventsRequest.builder().entries(putEventsRequestEntryList).build();
+            retryWriteEvents(pendingFlushRequestList);
+        } catch (AwsServiceException | SdkClientException e) {
+            // todo and metrics
+            // For aws exception, not to retry and not ack. just wait next receive message after retry.
+            // Such abnormalities are generally irreversible and require manual intervention.
+            log.error(e.getMessage(), e);
+        } finally {
+            // Rest status. Whether the refresh was successful or not,
+            // we need to subtract the size value because we have already taken it out of the queue.
+            currentBatchSize.addAndGet(-1 * popEventSize);
+            currentBatchByteSize.addAndGet(-1 * popEventBytesSize);
+            log.info("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
+                    currentBatchByteSize.get());
+        }
+    }
+
+    private void retryWriteEvents(List<PendingFlushRequest> pendingFlushRequestList) {
+        long retryNum = 0;
+        do {
+            PutEventsRequest putEventsRequest = PutEventsRequest.builder().entries(
+                            pendingFlushRequestList.stream().map(PendingFlushRequest::getPutEventsResultEntry).toList())
+                    .build();
             PutEventsResponse putEventsResponse = eventBridgeClient.putEvents(putEventsRequest);
-            while (putEventsResponse.failedEntryCount() > 0 && retryNum < eventBridgeConfig.getMaxRetryCount()) {
-                final List<PutEventsRequestEntry> failedEntriesList = new ArrayList<>();
+            final List<PendingFlushRequest> failedFlushRequestList = new ArrayList<>();
+            if (putEventsResponse.failedEntryCount() > 0) {
                 final List<PutEventsResultEntry> putEventsResultEntryList = putEventsResponse.entries();
                 for (int i = 0; i < putEventsResultEntryList.size(); i++) {
-                    final PutEventsRequestEntry putEventsRequestEntry = putEventsRequestEntryList.get(i);
+                    final PendingFlushRequest pendingFlushRequest = pendingFlushRequestList.get(i);
                     final PutEventsResultEntry putEventsResultEntry = putEventsResultEntryList.get(i);
                     if (putEventsResultEntry.errorCode() != null) {
-                        failedEntriesList.add(putEventsRequestEntry);
+                        failedFlushRequestList.add(pendingFlushRequest);
+                    } else {
+                        // ack success msg.
+                        pendingFlushRequest.record.ack();
                     }
                 }
                 log.warn(
                         "Failed to send {} events to AWS EventBridge, wait for {} ms retry. currentRetryNum:{}, "
                                 + "maxRetryCount:{}",
-                        failedEntriesList.size(), eventBridgeConfig.getIntervalRetryTimeMs(), retryNum,
+                        failedFlushRequestList.size(), eventBridgeConfig.getIntervalRetryTimeMs(), retryNum,
                         eventBridgeConfig.getMaxRetryCount());
                 if (eventBridgeConfig.getIntervalRetryTimeMs() > 0) {
                     try {
@@ -179,25 +214,15 @@ public class BatchEventWriter implements Closeable {
                         break;
                     }
                 }
-                putEventsRequestEntryList = failedEntriesList;
-                putEventsRequest = PutEventsRequest.builder().entries(putEventsRequestEntryList).build();
-                putEventsResponse = eventBridgeClient.putEvents(putEventsRequest);
-                retryNum++;
+            } else {
+                // not failed entry, ack all msg.
+                pendingFlushRequestList.forEach(pendingFlushRequest -> pendingFlushRequest.record.ack());
             }
-            // Ack all messages.
-            pendingAckRecords.forEach(Record::ack);
-        } catch (AwsServiceException | SdkClientException e) {
-            // todo and metrics
-            // For aws exception, not to retry and not ack. just wait next receive message after retry.
-            // Such abnormalities are generally irreversible and require manual intervention.
-            log.error("Put event error: {}", e.getMessage(), e);
-        } finally {
-            // Rest status. Whether the refresh was successful or not,
-            // we need to subtract the size value because we have already taken it out of the queue.
-            currentBatchSize.addAndGet(-1 * pendingAckRecords.size());
-            currentBatchByteSize.addAndGet(-1 * popEventBytesSize);
-            log.info("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
-                    currentBatchByteSize.get());
+            pendingFlushRequestList = failedFlushRequestList;
+        } while (!pendingFlushRequestList.isEmpty() && retryNum++ < eventBridgeConfig.getMaxRetryCount());
+
+        for (PendingFlushRequest pendingFlushRequest : pendingFlushRequestList) {
+            log.error("The event send failed after retry {}", pendingFlushRequest.putEventsResultEntry);
         }
     }
 
