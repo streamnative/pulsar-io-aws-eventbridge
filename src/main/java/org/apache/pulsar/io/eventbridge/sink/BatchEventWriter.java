@@ -144,8 +144,11 @@ public class BatchEventWriter implements Closeable {
                     currentBatchSize.get(), currentBatchByteSize.get());
             return;
         }
-        log.info("Start flush events, currentBatchSize: {}, currentBatchByteSize: {} ", currentBatchSize.get(),
-                currentBatchByteSize.get());
+
+        if (log.isDebugEnabled()) {
+            log.debug("Start flush events, currentBatchSize: {}, currentBatchByteSize: {} ", currentBatchSize.get(),
+                    currentBatchByteSize.get());
+        }
 
         // The pop messages cannot be larger than batchBytes and batchSize.
         // In any case, as long as there is a message in the queue, we will first add one to it.
@@ -162,8 +165,9 @@ public class BatchEventWriter implements Closeable {
         } while (peekFlushRequest != null && (eventBridgeConfig.getBatchMaxSize() < 0
                 || pendingFlushRequestList.size() < eventBridgeConfig.getBatchMaxSize())
                 && popEventBytesSize + peekFlushRequest.entrySize < eventBridgeConfig.getBatchMaxBytesSize());
-
-        log.info("Actual flush events, size: {}, bytes size: {}", popEventSize, popEventBytesSize);
+        if (log.isDebugEnabled()) {
+            log.info("Actual flush events, size: {}, bytes size: {}", popEventSize, popEventBytesSize);
+        }
         try {
             retryWriteEvents(pendingFlushRequestList);
         } catch (AwsServiceException | SdkClientException e) {
@@ -176,8 +180,10 @@ public class BatchEventWriter implements Closeable {
             // we need to subtract the size value because we have already taken it out of the queue.
             currentBatchSize.addAndGet(-1 * popEventSize);
             currentBatchByteSize.addAndGet(-1 * popEventBytesSize);
-            log.info("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
-                    currentBatchByteSize.get());
+            if (log.isDebugEnabled()) {
+                log.info("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
+                        currentBatchByteSize.get());
+            }
         }
     }
 

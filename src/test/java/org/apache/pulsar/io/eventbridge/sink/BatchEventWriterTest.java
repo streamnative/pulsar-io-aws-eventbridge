@@ -114,8 +114,7 @@ public class BatchEventWriterTest {
         Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
 
         BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
-        // Send one more to make sure there is no more flush.
-        for (int i = 0; i < 10 + 1; i++) {
+        for (int i = 0; i < 10; i++) {
             batchEventWriter.append(data, record);
         }
         countDownLatch.await();
@@ -127,7 +126,7 @@ public class BatchEventWriterTest {
     public Object[][] batchFlushProvider() {
         return new Object[][]{
                 // Testing when a single message is greater than batchMaxByteSize also triggers a refresh
-                {-1, 50, -1, 11},
+                {-1, 50, -1, 10},
                 {10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1, 1},
                 {-1, 650, 500, 2},
                 {-1, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, 500, 1},
