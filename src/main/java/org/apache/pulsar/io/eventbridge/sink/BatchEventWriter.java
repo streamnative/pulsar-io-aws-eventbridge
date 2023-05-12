@@ -181,7 +181,7 @@ public class BatchEventWriter implements Closeable {
             currentBatchSize.addAndGet(-1 * popEventSize);
             currentBatchByteSize.addAndGet(-1 * popEventBytesSize);
             if (log.isDebugEnabled()) {
-                log.info("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
+                log.debug("End flush events, currentBatchSize: {}, currentBatchByteSize: {}", currentBatchSize.get(),
                         currentBatchByteSize.get());
             }
         }
