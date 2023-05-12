@@ -166,7 +166,7 @@ public class BatchEventWriter implements Closeable {
                 || pendingFlushRequestList.size() < eventBridgeConfig.getBatchMaxSize())
                 && popEventBytesSize + peekFlushRequest.entrySize < eventBridgeConfig.getBatchMaxBytesSize());
         if (log.isDebugEnabled()) {
-            log.info("Actual flush events, size: {}, bytes size: {}", popEventSize, popEventBytesSize);
+            log.debug("Actual flush events, size: {}, bytes size: {}", popEventSize, popEventBytesSize);
         }
         try {
             retryWriteEvents(pendingFlushRequestList);
