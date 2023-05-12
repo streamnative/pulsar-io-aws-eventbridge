@@ -1,0 +1,118 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+configs:
+
+  # The AWS Event Bridge access key ID.
+  #
+  # This field is optional.
+  #
+  accessKeyId: ""
+  
+  # The AWS Event Bridge secret key.
+  #
+  # This field is optional.
+  #
+  secretAccessKey: ""
+  
+  # The aws role to use. Implies to use an assume role.
+  #
+  # This field is optional.
+  #
+  role: ""
+  
+  # The aws role session name to use. Implies to use an assume role.
+  #
+  # This field is optional.
+  #
+  roleSessionName: ""
+  
+  # The sts endpoint to use, default to default sts endpoint.
+  #
+  # This field is optional.
+  #
+  stsEndpoint: ""
+  
+  # The sts region to use, defaults to the 'region' config or env region.
+  #
+  # This field is optional.
+  #
+  stsRegion: ""
+  
+  # The Event Bridge region.
+  #
+  # This field is *required*.
+  #
+  region: "ap-northeast-1"
+  
+  # The Event Bus name.
+  #
+  # This field is *required*.
+  # 
+  eventBusName: "baodi-test"
+  
+  # The Event Bus Aws resource name(ARN).
+  #
+  # This field is optional.
+  # 
+  eventBusResourceName: "arn:aws:events:ap-northeast-1:598203581484:event-bus/baodi-test"
+  
+  # The metadata field will add to the event. separate multiple fields with commas.
+  #
+  # Optional: schema_version| partition | event_time | publish_time | 
+  # message_id | sequence_id | producer_name | key | properties
+  #
+  # This field is optional.
+  metaDataField: "message_id,event_time"
+  
+  # Pending Queue size, This value must greater than batchMaxSize.
+  #
+  # This field is optional.
+  # 
+  batchPendingQueueSize: 1000
+  
+  # Maximum number of batch messages.
+  # Member must less than or equal to 10(AWS Required).
+  #
+  # This field is optional.
+  # 
+  batchMaxSize: 10
+  
+  # Maximum number of batch bytes payload size. This value cannot be greater than 512000(512KB).
+  #
+  # This field is optional.
+  # 
+  batchMaxBytesSize: 6400
+  
+  # Batch max wait time: milliseconds.
+  #
+  # This field is optional.
+  # 
+  batchMaxTimeMs: 5000
+  
+  # Maximum retry send event count, when the event put failed.
+  #
+  # This field is optional.
+  # 
+  maxRetryCount: 100
+  
+  # The interval time(milliseconds) for each retry, when the event put failed.
+  #
+  # This field is optional.
+  # 
+  intervalRetryTimeMs: 1000
