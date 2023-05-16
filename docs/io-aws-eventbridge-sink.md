@@ -3,32 +3,32 @@ dockerfile: "https://hub.docker.com/r/streamnative/pulsar-io-aws-eventbridge"
 alias: AWS EventBridge Sink Connector
 ---
 
-The [AWS EventBridge](https://aws.amazon.com/eventbridge/) sink connector pulls data from Pulsar topics and persists
-data to AWS EventBridge.
+The [Amazon EventBridge](https://aws.amazon.com/eventbridge/) sink connector pulls data from Pulsar topics and persists
+data to Amazon EventBridge.
 
 ![](/docs/aws-eventbridge-sink.png)
 
 # Features
 
-This section describes features of the AWS EventBridge sink connector. For details about how to configure these
+This section describes the features of the AWS EventBridge sink connector. For details about how to configure these
 features, see [how to configure](#how-to-configure).
 
-## At least once delivery
+## At-least-once delivery
 
-Pulsar connector framework provides three guarantees: **at-most-once**、**at-least-once** and **effectively-once**. The *
-*effectively-once** needs the support of the Sink downstream system. After investigation, it was found that EventBridge
+Pulsar connector framework provides three guarantees: **at-most-once**、**at-least-once** and **effectively-once**. The
+**effectively-once** needs the support of the Sink downstream system. After investigation, it was found that EventBridge
 did not meet the requirements.
 
-Therefore, this connector can provide the **at-least-once** delivery at most, and when the user configures the *
-*effectively-once**, it will throw exception.
+Therefore, this connector can provide the  **at-most-once** and **at-least-once** delivery guarantees, and when the user
+configures the **effectively-once**, it will throw exception.
 
 ## Data convert
 
 Referring to the above, we know that all events in EventBridge are
 in [JSON format](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html).
 
-The Pulsar support multi schema type, When receive a data, the connectors will convert data to JSON string. The
-connectors automatically recognizes the pulsar data and convert it according to the following table:
+Pulsar supports multiple schema types. When receiving the data from Pulsar, the AWS EventBridge sink connectors
+recognize it and convert it to a JSON string according to the following table:
 
 | Pulsar Schema  | Convert to JSON | Note                                                                                                                                       |
 |----------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------|
@@ -56,10 +56,10 @@ In event bridge, the user data is in the `detail$data` field.
 ## Meta data mapping
 
 In EventBridge, a complete event contains
-many [system fields](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html#eb-custom-event). This
-system fields can help users to config rule.
+many [system fields](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html#eb-custom-event). These
+system fields can help you to configure the rule.
 
-A event data **Event**:
+An **Event** containing event data:
 
 ```json
 {
@@ -83,14 +83,14 @@ A event data **Event**:
 }
 ```
 
-This connectors will mapping following fields:
+This connector maps the following fields:
 
-- sourceType →The default value is `${{Connector Name}}`
-- detailType → The default value is `${{Topic Name}}`
+- sourceType: The default value is `${{Connector Name}}`.
+- detailType: The default value is `${{Topic Name}}`.
 
-And, This connector support set metadata of pulsar to every **Event**(Set in the **detail** field).
+And, this connector supports setting the metadata of Pulsar to every **Event** (set in the **detail** field).
 
-Users can select the desired meata-data through the following configuration:
+You can select the desired meta-data through the following configuration:
 
 ```jsx
 #
@@ -100,7 +100,7 @@ message_id | sequence_id | producer_name | key | properties
 metaDataField = event_time, message_id
 ```
 
-A contain meta data **Event**:
+An **Event** containing metadata :
 
 ```json
 {
@@ -128,23 +128,24 @@ A contain meta data **Event**:
 
 ## Parallelism
 
-The parallelism of Sink execution can be configured, use the scheduling mechanism of the Function itself, and multiple
-sink instances will be scheduled to run on different worker nodes. Multiple sinks will consume message together
+You can configure the parallelism of Sink execution by using the scheduling mechanism of the Function, and multiple
+sink instances will be scheduled to run on different worker nodes. Multiple sinks will consume messages together
 according to the configured subscription mode.
 
-Since EventBus doesn't need to guarantee sequentiality, So the connectors supports the `shared` subscription model, When
-you need to increase write throughput, you can configure:
+Since EventBus doesn't need to guarantee sequentiality, so the connectors support the `shared` subscription model.
+
+To increase the write throughput, you can configure the following:
 
 ```jsx
 parallelism = 4
 ```
 
-> When sink config set `retainOrdering` is false, it means use `Shared` subscription mode.
+> When `retainOrdering` is set to `false`, the `Shared` subscription mode is used.
 >
 
 ## Batch Put
 
-This connectors support batch put event, It is mainly controlled by the following three parameters:
+AWS EventBridge connectors support batch put events, which are mainly controlled by the following three parameters:
 
 - **batchSize**: When the buffered message is larger than batchSize, will trigger flush(put) events. `0` means no
   trigger.
@@ -155,7 +156,7 @@ This connectors support batch put event, It is mainly controlled by the followin
 
 In addition to these three parameters that control flush
 behavior, [in AWS EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html), batches
-larger than 265KB per write are not allowed. So, when buffered message larger than 256KB, will trigger flush.
+larger than 265KB per write are not allowed. So, when the buffered message is larger than 256KB, it will trigger a flush.
 
 ## Retry Put
 
@@ -233,7 +234,6 @@ descriptions.
 | `batchMaxTimeMs`        | long   | no       | 5000              | Batch max wait time: milliseconds.                                                                                                                                                                                     |
 | `maxRetryCount`         | long   | no       | 100               | Maximum retry send event count, when the event put failed.                                                                                                                                                             |
 | `intervalRetryTimeMs`   | long   | no       | 1000              | The interval time(milliseconds) for each retry, when the event put failed.                                                                                                                                             |
-
 
 ## Work with Function Worker
 
