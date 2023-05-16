@@ -13,7 +13,7 @@ data to Amazon EventBridge.
 This section describes the features of the AWS EventBridge sink connector. For details about how to configure these
 features, see [how to configure](#how-to-configure).
 
-## At-least-once delivery
+## Delivery guarantees
 
 Pulsar connector framework provides three guarantees: **at-most-once**、**at-least-once** and **effectively-once**. The
 **effectively-once** needs the support of the Sink downstream system. After investigation, it was found that EventBridge
@@ -24,8 +24,8 @@ configures the **effectively-once**, it will throw exception.
 
 ## Data convert
 
-Referring to the above, we know that all events in EventBridge are
-in [JSON format](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html).
+In AWS EventBridge, all events
+is [JSON format](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html).
 
 Pulsar supports multiple schema types. When receiving the data from Pulsar, the AWS EventBridge sink connectors
 recognize it and convert it to a JSON string according to the following table:
@@ -156,14 +156,15 @@ AWS EventBridge connectors support batch put events, which are mainly controlled
 
 In addition to these three parameters that control flush
 behavior, [in AWS EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html), batches
-larger than 265KB per write are not allowed. So, when the buffered message is larger than 256KB, it will trigger a flush.
+larger than 265KB per write are not allowed. So, when the buffered message is larger than 256KB, it will trigger a
+flush.
 
 ## Retry Put
 
-In AWS Event Bridge, about Handling failures with PutEvents, It just suggests to retry. we'll retry each error message
-until it succeeds.
+In AWS Event Bridge, about Handling failures with PutEvents, It just suggests to retry each error
+message [until it succeeds](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevents.html).
 
-This connector will provider flow two config to controller retry strategy:
+This connector will provide two flow configs for the controller's retry strategy:
 
 ```jsx
 maxRetryCount: 100 // Maximum retry send event count, when event send failed.
@@ -172,7 +173,7 @@ intervalRetryTimeMs: 1000 //The interval time(milliseconds) for each retry, when
 
 # How to get
 
-This section describes how to build the AWS EventBridge sink connector.
+This section describes how to get the AWS EventBridge sink connector.
 
 ## Work with Function Worker
 
@@ -229,7 +230,7 @@ descriptions.
 | `eventBusResourceName`  | String | no       | "" (empty string) | The Event Bus Aws resource name(ARN).                                                                                                                                                                                  |
 | `metaDataField`         | String | no       | "" (empty string) | The metadata field will add to the event. separate multiple fields with commas. optional: schema_version `partition`,  `event_time`, `publish_time`, `message_id`, `sequence_id`, `producer_name`, `key`, `properties` |
 | `batchPendingQueueSize` | int    | no       | 1000              | Pending Queue size, This value must greater than batchMaxSize.                                                                                                                                                         |
-| `batchMaxSize`          | int    | no       | 10                | Maximum number of batch messages. Member must less than or equal to 10(AWS Required)                                                                                                                                   |
+| `batchMaxSize`          | int    | no       | 10                | Maximum number of batch messages. Number must less than or equal to 10(AWS Required)                                                                                                                                   |
 | `batchMaxBytesSize`     | long   | no       | 640               | Maximum number of batch bytes payload size. This value cannot be greater than 512KB.                                                                                                                                   |
 | `batchMaxTimeMs`        | long   | no       | 5000              | Batch max wait time: milliseconds.                                                                                                                                                                                     |
 | `maxRetryCount`         | long   | no       | 100               | Maximum retry send event count, when the event put failed.                                                                                                                                                             |

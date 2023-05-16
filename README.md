@@ -1,6 +1,7 @@
 ## AWS EventBridge sink connector
 
-The AWS EventBridge connector is a [Pulsar IO connector](http://pulsar.apache.org/docs/en/next/io-overview/) for copying data between [Amazon EventBridge](https://aws.amazon.com/eventbridge/) and Pulsar.
+The AWS EventBridge sink connector is a [Pulsar IO connector](http://pulsar.apache.org/docs/en/next/io-overview/) for copying data from Pulsar to [Amazon EventBridge](https://aws.amazon.com/eventbridge/). 
+
 
 ![](docs/aws-eventbridge-sink.png)
 
@@ -18,6 +19,7 @@ Below are the sub folders and files of this project and their corresponding desc
 ```bash
 ├── conf // examples of configuration files of this connector
 ├── docs // user guides of this connector
+├── image // docker file of this connector
 ├── script // scripts of this connector
 ├── src // source code of this connector
 │   ├── checkstyle // checkstyle configuration files of this connector
