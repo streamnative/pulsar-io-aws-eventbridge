@@ -2,11 +2,11 @@
 
 set -ex
 
-echo "Releasing connector Big Query"
+echo "Releasing connector AWS EventBridge"
 
 version=${1#v}
 if [[ "x$version" == "x" ]]; then
-  echo "You need give a version number of the connector Big Query"
+  echo "You need give a version number of the connector AWS EventBridge"
   exit 1
 fi
 
