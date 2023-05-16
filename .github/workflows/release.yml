@@ -22,8 +22,8 @@ jobs:
         run: |
           version=`./scripts/get-version.sh`
           mvn clean install -DskipTests
-          echo "::set-output name=jar-file::pulsar-io-bigquery-${version}.jar"
-          echo "::set-output name=readme-file::pulsar-io-bigquery-readme.md"
+          echo "::set-output name=nar-file::pulsar-io-aws-eventbridge-${version}.nar"
+          echo "::set-output name=readme-file::pulsar-io-aws-eventbridge.md"
 
       - name: build and push docker image
         uses: nick-invision/retry@v2
