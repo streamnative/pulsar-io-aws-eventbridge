@@ -124,7 +124,7 @@ public class EventBridgeConfig implements Serializable {
     @FieldDoc(required = false,
             defaultValue = "10",
             help = "Maximum number of batch messages. Member must less than or equal to 10(AWS Required)")
-    private long batchMaxSize;
+    private int batchMaxSize;
 
     @FieldDoc(required = false,
             defaultValue = "640",
