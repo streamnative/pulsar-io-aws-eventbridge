@@ -113,7 +113,8 @@ public class BatchEventWriterTest {
         CountDownLatch countDownLatch = new CountDownLatch(10);
         Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
 
-        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
+        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient,
+                mock(SinkContext.class));
         for (int i = 0; i < 10; i++) {
             batchEventWriter.append(data, record);
         }
@@ -170,7 +171,8 @@ public class BatchEventWriterTest {
         CountDownLatch countDownLatch = new CountDownLatch(10);
         Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
 
-        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
+        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient,
+                mock(SinkContext.class));
         for (int i = 0; i < 10; i++) {
             batchEventWriter.append(data + i, record);
         }
@@ -216,7 +218,8 @@ public class BatchEventWriterTest {
         CountDownLatch countDownLatch = new CountDownLatch(10);
         Record<GenericObject> record = getGenericObjectRecord(topicName, countDownLatch);
 
-        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient);
+        BatchEventWriter batchEventWriter = new BatchEventWriter(sinkName, eventBridgeConfig, eventBridgeClient,
+                mock(SinkContext.class));
         for (int i = 0; i < 10; i++) {
             batchEventWriter.append(data + i, record);
         }
@@ -233,7 +236,8 @@ public class BatchEventWriterTest {
         EventBridgeConfig
                 eventBridgeConfig = getEventBridgeConfig(10, EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE, -1);
         EventBridgeClient eventBridgeClient = mock(EventBridgeClient.class);
-        BatchEventWriter batchEventWriter = new BatchEventWriter("test-sink", eventBridgeConfig, eventBridgeClient);
+        BatchEventWriter batchEventWriter = new BatchEventWriter("test-sink", eventBridgeConfig, eventBridgeClient,
+                mock(SinkContext.class));
         byte[] bytes = new byte[Math.toIntExact(EventBridgeConfig.DEFAULT_MAX_BATCH_BYTES_SIZE)];
         Record<GenericObject> record = getGenericObjectRecord("test-topic", null);
         batchEventWriter.append(new String(bytes), record);
