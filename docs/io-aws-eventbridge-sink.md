@@ -15,12 +15,11 @@ features, see [how to configure](#how-to-configure).
 
 ## Delivery guarantees
 
-Pulsar connector framework provides three guarantees: **at-most-once**、**at-least-once** and **effectively-once**. The
-**effectively-once** needs the support of the Sink downstream system. After investigation, it was found that EventBridge
-did not meet the requirements.
+The AWS EventBridge sink connector provides two delivery guarantees: **at-most-once** and **at-least-once**.
 
-Therefore, this connector can provide the  **at-most-once** and **at-least-once** delivery guarantees, and when the user
-configures the **effectively-once**, it will throw exception.
+> **Note:**
+> Currently, the **effectively-once** delivery guarantee is not supported, because Amazon EventBridge cannot offer the
+> support of the Sink downstream system.
 
 ## Data convert
 
@@ -38,7 +37,7 @@ recognize it and convert it to a JSON string according to the following table:
 | Protobuf       | X               | The Protobuf schema is based on the Avro schema. It uses Avro as an intermediate format, so it may not provide the best effort conversion. |
 | ProtobufNative | ✔               | Take advantage of toolkit conversions                                                                                                      |
 
-In event bridge, the user data is in the `detail$data` field.
+In EventBridge, the user data is in the `detail$data` field.
 
 ```json
 {
@@ -53,7 +52,7 @@ In event bridge, the user data is in the `detail$data` field.
 }
 ```
 
-## Meta data mapping
+## Metadata mapping
 
 In EventBridge, a complete event contains
 many [system fields](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-events.html#eb-custom-event). These
@@ -90,7 +89,7 @@ This connector maps the following fields:
 
 And, this connector supports setting the metadata of Pulsar to every **Event** (set in the **detail** field).
 
-You can select the desired meta-data through the following configuration:
+You can select the desired metadata through the following configuration:
 
 ```jsx
 #
@@ -161,7 +160,7 @@ flush.
 
 ## Retry Put
 
-In AWS Event Bridge, about Handling failures with PutEvents, It just suggests to retry each error
+In AWS Event Bridge, about Handling failures with PutEvents, It suggests retrying each error
 message [until it succeeds](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevents.html).
 
 This connector will provide two flow configs for the controller's retry strategy:
@@ -217,24 +216,24 @@ use [Function Mesh](https://functionmesh.io/docs/connectors/run-connector) to ru
 Before using the AWS EventBridge sink connector, you need to configure it. This table outlines the properties and the
 descriptions.
 
-| Name                    | Type   | Required | Default           | Description                                                                                                                                                                                                            |
-|-------------------------|--------|----------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `accessKeyId`           | String | No       | "" (empty string) | The Event Bridge access key ID.                                                                                                                                                                                        |
-| `secretAccessKey`       | String | no       | "" (empty string) | The Event Bridge secret access key.                                                                                                                                                                                    |
-| `role`                  | String | no       | "" (empty string) | The aws role to use. Implies to use an assume role.                                                                                                                                                                    |
-| `roleSessionName`       | String | no       | "" (empty string) | The aws role session name to use. Implies to use an assume role.                                                                                                                                                       |
-| `stsEndpoint`           | String | no       | "" (empty string) | The sts endpoint to use, default to default sts endpoint.                                                                                                                                                              |
-| `stsRegion`             | String | no       | "" (empty string) | The sts region to use, defaults to the 'region' config or env region.                                                                                                                                                  |
-| `region`                | String | yes      | "" (empty string) | The Event Bridge region.                                                                                                                                                                                               |
-| `eventBusName`          | String | yes      | "" (empty string) | The Event Bus name.                                                                                                                                                                                                    |
-| `eventBusResourceName`  | String | no       | "" (empty string) | The Event Bus Aws resource name(ARN).                                                                                                                                                                                  |
-| `metaDataField`         | String | no       | "" (empty string) | The metadata field will add to the event. separate multiple fields with commas. optional: schema_version `partition`,  `event_time`, `publish_time`, `message_id`, `sequence_id`, `producer_name`, `key`, `properties` |
-| `batchPendingQueueSize` | int    | no       | 1000              | Pending Queue size, This value must greater than batchMaxSize.                                                                                                                                                         |
-| `batchMaxSize`          | int    | no       | 10                | Maximum number of batch messages. Number must less than or equal to 10(AWS Required)                                                                                                                                   |
-| `batchMaxBytesSize`     | long   | no       | 640               | Maximum number of batch bytes payload size. This value cannot be greater than 512KB.                                                                                                                                   |
-| `batchMaxTimeMs`        | long   | no       | 5000              | Batch max wait time: milliseconds.                                                                                                                                                                                     |
-| `maxRetryCount`         | long   | no       | 100               | Maximum retry send event count, when the event put failed.                                                                                                                                                             |
-| `intervalRetryTimeMs`   | long   | no       | 1000              | The interval time(milliseconds) for each retry, when the event put failed.                                                                                                                                             |
+| Name                    | Type   | Required | Default           | Description                                                                                                                                                                                                                              |
+|-------------------------|--------|----------|-------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `accessKeyId`           | String | No       | "" (empty string) | The EventBridge access key ID.                                                                                                                                                                                                           |
+| `secretAccessKey`       | String | no       | "" (empty string) | The EventBridge secret access key.                                                                                                                                                                                                       |
+| `role`                  | String | no       | "" (empty string) | The AWS role to use.                                                                                                                                                                                                                     |
+| `roleSessionName`       | String | no       | "" (empty string) | The AWS role session name to use. Implies to use an assume role.                                                                                                                                                                         |
+| `stsEndpoint`           | String | no       | "" (empty string) | The STS endpoint to use. By default, the [default STS endpoint](https://sts.amazonaws.com) is used. See [Amazon documentation](https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html) for more details.                       |
+| `stsRegion`             | String | no       | "" (empty string) | The STS region to use, By default, the 'region' config or env region is used.                                                                                                                                                            |
+| `region`                | String | yes      | "" (empty string) | The EventBridge region.                                                                                                                                                                                                                  |
+| `eventBusName`          | String | yes      | "" (empty string) | The Event Bus name.                                                                                                                                                                                                                      |
+| `eventBusResourceName`  | String | no       | "" (empty string) | The Event Bus ARN (AWS Resource Name).                                                                                                                                                                                                   |
+| `metaDataField`         | String | no       | "" (empty string) | The metadata fields added to the event. Multiple fields are separated with commas. Optional values: `schema_version`, `partition`,  `event_time`, `publish_time`, `message_id`, `sequence_id`, `producer_name`, `key`, and `properties`. |
+| `batchPendingQueueSize` | int    | no       | 1000              | Pending queue size. This value must be greater than `batchMaxSize`.                                                                                                                                                                      |
+| `batchMaxSize`          | int    | no       | 10                | Maximum number of batch messages. The number must be less than or equal to 10 (AWS required).                                                                                                                                            |
+| `batchMaxBytesSize`     | long   | no       | 640               | Maximum number of batch bytes payload size. This value cannot be greater than 512KB.                                                                                                                                                     |
+| `batchMaxTimeMs`        | long   | no       | 5000              | Batch max wait time: milliseconds.                                                                                                                                                                                                       |
+| `maxRetryCount`         | long   | no       | 100               | Maximum retry send event count, when the event put failed.                                                                                                                                                                               |
+| `intervalRetryTimeMs`   | long   | no       | 1000              | The interval time(milliseconds) for each retry, when the event put failed.                                                                                                                                                               |
 
 ## Work with Function Worker
 
@@ -285,7 +284,7 @@ use [Pulsar Function Worker](https://pulsar.apache.org/docs/en/functions-worker/
 
 You can create
 a [CustomResourceDefinitions (CRD)](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
-to create a AWS EventBridge sink connector. Using CRD makes Function Mesh naturally integrate with the Kubernetes
+to create an AWS EventBridge sink connector. Using CRD makes Function Mesh naturally integrate with the Kubernetes
 ecosystem. For more information about Pulsar sink CRD configurations,
 see [sink CRD configurations](https://functionmesh.io/docs/connectors/io-crd-config/sink-crd-config).
 
@@ -363,7 +362,7 @@ You can use the AWS EventBridge sink connector with Function Worker or Function 
 
 4. Show data on AWS EventBridge.
 
-The connector will send flow format JSON event to event bridge.
+The connector will send following format JSON event to EventBridge.
 
 ```json
 {
@@ -390,14 +389,14 @@ to [CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/W
 
 ## Work with Function Mesh
 
-This example describes how to create a AWS EventBridge sink connector for a Kubernetes cluster using Function
+This example describes how to create an AWS EventBridge sink connector for a Kubernetes cluster using Function
 Mesh.
 
 ### Prerequisites
 
 - Create and connect to a [Kubernetes cluster](https://kubernetes.io/).
 
-- Create a [Pulsar cluster](https://pulsar.apache.org/docs/en/kubernetes-helm/) in the Kubernetes cluster.
+- Create a [Pulsar cluster](https://pulsar.apache.org/docs/getting-started-helm/) in the Kubernetes cluster.
 
 - [Install the Function Mesh Operator and CRD](https://functionmesh.io/docs/install-function-mesh/) into the Kubernetes
   cluster.
@@ -405,7 +404,7 @@ Mesh.
 - Prepare AWS EventBridge service. For details,
   see [Getting Started with AWS EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-setup.html).
 
-### Step
+### Steps
 
 1. Define the AWS EventBridge sink connector with a YAML file and save it as `sink-sample.yaml`.
 

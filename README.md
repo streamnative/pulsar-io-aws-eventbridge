@@ -1,16 +1,15 @@
 ## AWS EventBridge sink connector
 
-The AWS EventBridge sink connector is a [Pulsar IO connector](http://pulsar.apache.org/docs/en/next/io-overview/) for copying data from Pulsar to [Amazon EventBridge](https://aws.amazon.com/eventbridge/). 
-
+The AWS EventBridge sink connector is a [Pulsar IO connector](http://pulsar.apache.org/docs/en/next/io-overview/) for
+copying data from Pulsar to [Amazon EventBridge](https://aws.amazon.com/eventbridge/).
 
 ![](docs/aws-eventbridge-sink.png)
 
 Currently, AWS EventBridge connector versions (`x.y.z`) are based on Pulsar versions (`x.y.z`).
 
-| AWS EventBridge connector version                                            | Pulsar version                                  | Doc                                                                     |
-|:-----------------------------------------------------------------------------|:------------------------------------------------|:------------------------------------------------------------------------|
-| [2.11.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.11.1](http://pulsar.apache.org/en/download/) | [AWS EventBridge sink connector doc](./docs/io-aws-eventbridge-sink.md) |
-
+| AWS EventBridge connector version                                            | Pulsar version                                              | Doc                                                                     |
+|:-----------------------------------------------------------------------------|:------------------------------------------------------------|:------------------------------------------------------------------------|
+| [2.11.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.11.1](https://pulsar.apache.org/download/#older-release) | [AWS EventBridge sink connector doc](./docs/io-aws-eventbridge-sink.md) |
 
 ## Project layout
 

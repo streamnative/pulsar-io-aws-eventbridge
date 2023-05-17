@@ -32,7 +32,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
 
 /**
- * Aws Event Bridge Sink impl.
+ * Aws EventBridge Sink impl.
  */
 @Slf4j
 public class EventBridgeSink implements Sink<GenericObject> {

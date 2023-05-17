@@ -44,7 +44,7 @@ import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 
 /**
- * The event bridge sink Config.
+ * The EventBridge sink Config.
  */
 @Data
 @Slf4j
@@ -57,14 +57,14 @@ public class EventBridgeConfig implements Serializable {
             required = false,
             defaultValue = "",
             sensitive = true,
-            help = "The Event Bridge access key ID.")
+            help = "The EventBridge access key ID.")
     private String accessKeyId;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
             sensitive = true,
-            help = "The Event Bridge secret access key.")
+            help = "The EventBridge secret access key.")
     private String secretAccessKey;
 
     @FieldDoc(
@@ -94,19 +94,19 @@ public class EventBridgeConfig implements Serializable {
     @FieldDoc(
             required = true,
             defaultValue = "",
-            help = "The Event Bridge region.")
+            help = "The EventBridge region.")
     private String region;
 
     @FieldDoc(
             required = true,
             defaultValue = "",
-            help = "The Event Bus name.")
+            help = "The EventBus name.")
     private String eventBusName;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The Event Bus Aws resource name(ARN).")
+            help = "The EventBus Aws resource name(ARN).")
     private String eventBusResourceName;
 
     @FieldDoc(required = false,
