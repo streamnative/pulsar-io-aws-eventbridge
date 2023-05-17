@@ -146,11 +146,11 @@ parallelism = 4
 
 AWS EventBridge connectors support batch put events, which are mainly controlled by the following three parameters:
 
-- **batchSize**: When the buffered message is larger than batchSize, will trigger flush(put) events. `0` means no
+- **batchSize**: When the buffered message is larger than batchSize, it will trigger flush (put) events. `0` means no
   trigger.
 - **maxBatchBytes**: When the buffered message data size is larger than maxBatchBytes, will trigger flush(put) events.
   This value should be less than 256KB and **greater** then 0, The default value is 256KB.
-- **batchTimeMs**: When the interval between the last flush is exceeded batchTimeMs, will trigger flush(put)
+- **batchTimeMs**: When the interval from the last flush exceeds `batchTimeMs`, it will trigger flush (put)
   events.  `0` means no trigger.
 
 In addition to these three parameters that control flush
