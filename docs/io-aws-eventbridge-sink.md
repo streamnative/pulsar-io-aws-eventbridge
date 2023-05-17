@@ -131,7 +131,7 @@ You can configure the parallelism of Sink execution by using the scheduling mech
 sink instances will be scheduled to run on different worker nodes. Multiple sinks will consume messages together
 according to the configured subscription mode.
 
-Since EventBus doesn't need to guarantee sequentiality, so the connectors support the `shared` subscription model.
+Since EventBus doesn't need to guarantee sequentiality, the connectors support the `shared` subscription model.
 
 To increase the write throughput, you can configure the following:
 
@@ -148,9 +148,9 @@ AWS EventBridge connectors support batch put events, which are mainly controlled
 
 - **batchSize**: When the buffered message is larger than batchSize, it will trigger flush (put) events. `0` means no
   trigger.
-- **maxBatchBytes**: When the buffered message data size is larger than maxBatchBytes, will trigger flush(put) events.
-  This value should be less than 256KB and **greater** then 0, The default value is 256KB.
-- **batchTimeMs**: When the interval from the last flush exceeds `batchTimeMs`, it will trigger flush (put)
+- **maxBatchBytes**: When the buffered message data size is larger than maxBatchBytes, will trigger flush pending events.
+  This value should be less than 256KB and **greater** then 0, The default value is 640.
+- **batchTimeMs**: When the interval from the last flush exceeds `batchTimeMs`, it will trigger flush pending 
   events.  `0` means no trigger.
 
 In addition to these three parameters that control flush
@@ -221,7 +221,7 @@ descriptions.
 | `accessKeyId`           | String | No       | "" (empty string) | The EventBridge access key ID.                                                                                                                                                                                                           |
 | `secretAccessKey`       | String | no       | "" (empty string) | The EventBridge secret access key.                                                                                                                                                                                                       |
 | `role`                  | String | no       | "" (empty string) | The AWS role to use.                                                                                                                                                                                                                     |
-| `roleSessionName`       | String | no       | "" (empty string) | The AWS role session name to use. Implies to use an assume role.                                                                                                                                                                         |
+| `roleSessionName`       | String | no       | "" (empty string) | The AWS role session name to use.                                                                                                                                                                                                        |
 | `stsEndpoint`           | String | no       | "" (empty string) | The STS endpoint to use. By default, the [default STS endpoint](https://sts.amazonaws.com) is used. See [Amazon documentation](https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html) for more details.                       |
 | `stsRegion`             | String | no       | "" (empty string) | The STS region to use, By default, the 'region' config or env region is used.                                                                                                                                                            |
 | `region`                | String | yes      | "" (empty string) | The EventBridge region.                                                                                                                                                                                                                  |
@@ -232,8 +232,8 @@ descriptions.
 | `batchMaxSize`          | int    | no       | 10                | Maximum number of batch messages. The number must be less than or equal to 10 (AWS required).                                                                                                                                            |
 | `batchMaxBytesSize`     | long   | no       | 640               | Maximum number of batch bytes payload size. This value cannot be greater than 512KB.                                                                                                                                                     |
 | `batchMaxTimeMs`        | long   | no       | 5000              | Batch max wait time: milliseconds.                                                                                                                                                                                                       |
-| `maxRetryCount`         | long   | no       | 100               | Maximum retry send event count, when the event put failed.                                                                                                                                                                               |
-| `intervalRetryTimeMs`   | long   | no       | 1000              | The interval time(milliseconds) for each retry, when the event put failed.                                                                                                                                                               |
+| `maxRetryCount`         | long   | no       | 100               | Maximum number of retries to send events, when put events failed.                                                                                                                                                                        |
+| `intervalRetryTimeMs`   | long   | no       | 1000              | The interval time(milliseconds) for each retry, when the put events failed.                                                                                                                                                              |
 
 ## Work with Function Worker
 
@@ -362,7 +362,7 @@ You can use the AWS EventBridge sink connector with Function Worker or Function 
 
 4. Show data on AWS EventBridge.
 
-The connector will send following format JSON event to EventBridge.
+The connector will send the following format of JSON event to EventBridge.
 
 ```json
 {
@@ -383,9 +383,10 @@ The connector will send following format JSON event to EventBridge.
 }
 ```
 
-You can config [rule](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rules.html) to match event on AWS
-EventBridge, and set target
-to [CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) to look data.
+You can configure the [rule](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rules.html) to match events on
+Amazon EventBridge, and set the target
+to [Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) to track
+data.
 
 ## Work with Function Mesh
 
@@ -401,8 +402,8 @@ Mesh.
 - [Install the Function Mesh Operator and CRD](https://functionmesh.io/docs/install-function-mesh/) into the Kubernetes
   cluster.
 
-- Prepare AWS EventBridge service. For details,
-  see [Getting Started with AWS EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-setup.html).
+- Prepare Amazon EventBridge service. For more details,
+  see [Getting Started with Amazon EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-setup.html).
 
 ### Steps
 

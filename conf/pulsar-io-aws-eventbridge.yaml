@@ -43,7 +43,7 @@ configs:
   #
   roleSessionName: ""
   
-  # The sts endpoint to use, default to default sts endpoint.
+  # The sts endpoint to use, default to the default AWS STS endpoint.
   #
   # This field is optional.
   #

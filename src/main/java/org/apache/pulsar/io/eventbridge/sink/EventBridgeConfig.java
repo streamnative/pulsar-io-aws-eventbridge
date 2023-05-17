@@ -70,19 +70,19 @@ public class EventBridgeConfig implements Serializable {
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The aws role to use. Implies to use an assume role.")
+            help = "The aws role to use.")
     private String role;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The aws role session name to use. Implies to use an assume role.")
+            help = "The aws role session name to use.")
     private String roleSessionName;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The sts endpoint to use, default to default sts endpoint.")
+            help = "The sts endpoint to use, default to the default AWS STS endpoint")
     private String stsEndpoint;
 
     @FieldDoc(
@@ -123,7 +123,7 @@ public class EventBridgeConfig implements Serializable {
 
     @FieldDoc(required = false,
             defaultValue = "10",
-            help = "Maximum number of batch messages. Member must less than or equal to 10(AWS Required)")
+            help = "MMaximum number of batch messages. The number must be less than or equal to 10 (AWS Required).")
     private int batchMaxSize;
 
     @FieldDoc(required = false,
