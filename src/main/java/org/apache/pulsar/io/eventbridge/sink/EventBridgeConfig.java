@@ -44,7 +44,7 @@ import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider
 import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 
 /**
- * The event bridge sink Config.
+ * The EventBridge sink Config.
  */
 @Data
 @Slf4j
@@ -57,32 +57,32 @@ public class EventBridgeConfig implements Serializable {
             required = false,
             defaultValue = "",
             sensitive = true,
-            help = "The Event Bridge access key ID.")
+            help = "The EventBridge access key ID.")
     private String accessKeyId;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
             sensitive = true,
-            help = "The Event Bridge secret access key.")
+            help = "The EventBridge secret access key.")
     private String secretAccessKey;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The aws role to use. Implies to use an assume role.")
+            help = "The aws role to use.")
     private String role;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The aws role session name to use. Implies to use an assume role.")
+            help = "The aws role session name to use.")
     private String roleSessionName;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The sts endpoint to use, default to default sts endpoint.")
+            help = "The sts endpoint to use, default to the default AWS STS endpoint")
     private String stsEndpoint;
 
     @FieldDoc(
@@ -94,19 +94,19 @@ public class EventBridgeConfig implements Serializable {
     @FieldDoc(
             required = true,
             defaultValue = "",
-            help = "The Event Bridge region.")
+            help = "The EventBridge region.")
     private String region;
 
     @FieldDoc(
             required = true,
             defaultValue = "",
-            help = "The Event Bus name.")
+            help = "The EventBus name.")
     private String eventBusName;
 
     @FieldDoc(
             required = false,
             defaultValue = "",
-            help = "The Event Bus Aws resource name(ARN).")
+            help = "The EventBus Aws resource name(ARN).")
     private String eventBusResourceName;
 
     @FieldDoc(required = false,
@@ -123,8 +123,8 @@ public class EventBridgeConfig implements Serializable {
 
     @FieldDoc(required = false,
             defaultValue = "10",
-            help = "Maximum number of batch messages. Member must less than or equal to 10(AWS Required)")
-    private long batchMaxSize;
+            help = "MMaximum number of batch messages. The number must be less than or equal to 10 (AWS Required).")
+    private int batchMaxSize;
 
     @FieldDoc(required = false,
             defaultValue = "640",

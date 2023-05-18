@@ -18,13 +18,13 @@
 #
 configs:
 
-  # The AWS Event Bridge access key ID.
+  # The AWS EventBridge access key ID.
   #
   # This field is optional.
   #
   accessKeyId: ""
   
-  # The AWS Event Bridge secret key.
+  # The AWS EventBridge secret key.
   #
   # This field is optional.
   #
@@ -42,7 +42,7 @@ configs:
   #
   roleSessionName: ""
   
-  # The sts endpoint to use, default to default sts endpoint.
+  # The sts endpoint to use, default to the default AWS STS endpoint.
   #
   # This field is optional.
   #
@@ -54,7 +54,7 @@ configs:
   #
   stsRegion: ""
   
-  # The Event Bridge region.
+  # The EventBridge region.
   #
   # This field is *required*.
   #
