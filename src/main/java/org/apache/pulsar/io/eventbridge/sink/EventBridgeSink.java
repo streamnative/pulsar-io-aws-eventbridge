@@ -52,7 +52,8 @@ public class EventBridgeSink implements Sink<GenericObject> {
                 .region(Region.of(eventBridgeConfig.getRegion()))
                 .credentialsProvider(eventBridgeConfig.getAwsCredentialsProvider())
                 .build();
-        this.batchEventWriter = new BatchEventWriter(sinkConfig.getName(), eventBridgeConfig, eventBrClient);
+        this.batchEventWriter = new BatchEventWriter(sinkConfig.getName(), eventBridgeConfig, eventBrClient,
+                sinkContext);
         this.recordConvert = new DefaultRecordConvert(eventBridgeConfig.getMetaDataFields());
     }
 

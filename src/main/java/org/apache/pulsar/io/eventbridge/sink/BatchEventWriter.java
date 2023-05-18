@@ -38,7 +38,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.schema.GenericObject;
 import org.apache.pulsar.functions.api.Record;
+import org.apache.pulsar.io.core.SinkContext;
 import org.apache.pulsar.io.eventbridge.sink.exception.EBConnectorDirectFailException;
+import org.apache.pulsar.io.eventbridge.sink.utils.MetricContent;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.eventbridge.EventBridgeClient;
@@ -62,6 +64,7 @@ public class BatchEventWriter implements Closeable {
     private final AtomicLong currentBatchByteSize = new AtomicLong(0);
     private final AtomicBoolean isFlushRunning = new AtomicBoolean();
     private final String sinkName;
+    private final SinkContext sinkContext;
     private volatile long lastFlushTime;
 
     @Getter
@@ -72,11 +75,13 @@ public class BatchEventWriter implements Closeable {
         private long entrySize;
     }
 
-    public BatchEventWriter(String sinkName, EventBridgeConfig eventBridgeConfig, EventBridgeClient eventBridgeClient) {
+    public BatchEventWriter(String sinkName, EventBridgeConfig eventBridgeConfig, EventBridgeClient eventBridgeClient,
+                            SinkContext sinkContext) {
         this.sinkName = sinkName;
         this.eventBridgeConfig = eventBridgeConfig;
         this.eventBridgeClient = eventBridgeClient;
         this.pendingFlushEntryQueue = new ArrayBlockingQueue<>(eventBridgeConfig.getBatchPendingQueueSize());
+        this.sinkContext = sinkContext;
         this.flushExecutor = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryBuilder()
                 .setNameFormat("pulsar-io-aws-event-bridge-flush-%d")
                 .build());
@@ -124,7 +129,7 @@ public class BatchEventWriter implements Closeable {
                     try {
                         flush();
                     } catch (Exception e) {
-                        // todo and metrics
+                        sinkContext.recordMetric(MetricContent.FAIL_FLUSH_COUNT, 1);
                         log.error("Caught unexpected exception: {}", e.getMessage(), e);
                     } finally {
                         lastFlushTime = System.currentTimeMillis();
@@ -171,9 +176,9 @@ public class BatchEventWriter implements Closeable {
         try {
             retryWriteEvents(pendingFlushRequestList);
         } catch (AwsServiceException | SdkClientException e) {
-            // todo and metrics
             // For aws exception, not to retry and not ack. just wait next receive message after retry.
             // Such abnormalities are generally irreversible and require manual intervention.
+            sinkContext.recordMetric(MetricContent.FAIL_FLUSH_COUNT, 1);
             log.error(e.getMessage(), e);
         } finally {
             // Rest status. Whether the refresh was successful or not,
@@ -205,6 +210,7 @@ public class BatchEventWriter implements Closeable {
                     } else {
                         // ack success msg.
                         pendingFlushRequest.record.ack();
+                        sinkContext.recordMetric(MetricContent.ACK_COUNT, 1);
                     }
                 }
                 log.warn(
@@ -223,8 +229,12 @@ public class BatchEventWriter implements Closeable {
             } else {
                 // not failed entry, ack all msg.
                 pendingFlushRequestList.forEach(pendingFlushRequest -> pendingFlushRequest.record.ack());
+                sinkContext.recordMetric(MetricContent.ACK_COUNT, pendingFlushRequestList.size());
             }
             pendingFlushRequestList = failedFlushRequestList;
+            if (!pendingFlushRequestList.isEmpty()) {
+                sinkContext.recordMetric(MetricContent.RETRY_FLUSH_COUNT, 1);
+            }
         } while (!pendingFlushRequestList.isEmpty() && retryNum++ < eventBridgeConfig.getMaxRetryCount());
 
         for (PendingFlushRequest pendingFlushRequest : pendingFlushRequestList) {
