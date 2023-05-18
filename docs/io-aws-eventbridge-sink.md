@@ -149,13 +149,13 @@ AWS EventBridge connectors support batch put events, which are mainly controlled
 - **batchSize**: When the buffered message is larger than batchSize, it will trigger flush (put) events. `0` means no
   trigger.
 - **maxBatchBytes**: When the buffered message data size is larger than maxBatchBytes, it will trigger flush pending events.
-  This value should be less than 256000 and greater then 0, The default value is 640.
+  This value should be less than 256000 and greater than 0, The default value is 640.
 - **batchTimeMs**: When the interval from the last flush exceeds `batchTimeMs`, it will trigger flush pending 
   events.  `0` means no trigger.
 
 In addition to these three parameters that control flush
 behavior, [in AWS EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-putevent-size.html), batches
-larger than 265KB per write are not allowed. So, when the buffered message is larger than 256KB, it will trigger a
+larger than 256KB per write are not allowed. So, when the buffered message is larger than 256KB, it will trigger a
 flush.
 
 ## Retry Put
