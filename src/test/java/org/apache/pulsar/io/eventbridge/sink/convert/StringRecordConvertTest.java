@@ -133,8 +133,9 @@ public class StringRecordConvertTest extends RecordConvertTest {
     @Test
     @SneakyThrows
     public void testConvertToJsonByJsonArray() {
-        List<ExampleMessage> mockExampleMessages =
-                List.of(ExampleMessage.getMockExampleMessage(), ExampleMessage.getMockExampleMessage());
+        List<ExampleMessage> mockExampleMessages = new ArrayList<>();
+        mockExampleMessages.add(ExampleMessage.getMockExampleMessage());
+        mockExampleMessages.add(ExampleMessage.getMockExampleMessage());
         String jsonExampleMessages = MAPPER.writeValueAsString(mockExampleMessages);
         Record<GenericObject> record = new Record<GenericObject>() {
             @Override

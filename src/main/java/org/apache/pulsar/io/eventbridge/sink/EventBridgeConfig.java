@@ -18,7 +18,6 @@
  */
 package org.apache.pulsar.io.eventbridge.sink;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
@@ -51,7 +50,6 @@ import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 public class EventBridgeConfig implements Serializable {
 
     protected static final long DEFAULT_MAX_BATCH_BYTES_SIZE = 256000;
-    @Serial
     private static final long serialVersionUID = 1L;
     @FieldDoc(
             required = false,
