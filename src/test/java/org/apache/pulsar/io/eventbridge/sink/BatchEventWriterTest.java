@@ -52,7 +52,7 @@ public class BatchEventWriterTest {
 
     @NotNull
     private static Record<GenericObject> getGenericObjectRecord(String topicName, CountDownLatch countDownLatch) {
-        return new Record<>() {
+        return new Record<GenericObject>() {
             @Override
             public Optional<String> getTopicName() {
                 return Optional.of(topicName);

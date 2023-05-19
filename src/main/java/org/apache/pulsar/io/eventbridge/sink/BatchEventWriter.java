@@ -33,6 +33,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -196,8 +198,9 @@ public class BatchEventWriter implements Closeable {
         long retryNum = 0;
         do {
             PutEventsRequest putEventsRequest = PutEventsRequest.builder().entries(
-                            pendingFlushRequestList.stream().map(PendingFlushRequest::getPutEventsResultEntry).toList())
-                    .build();
+                    pendingFlushRequestList.stream().
+                            map(PendingFlushRequest::getPutEventsResultEntry).collect(Collectors.toList())
+                    ).build();
             PutEventsResponse putEventsResponse = eventBridgeClient.putEvents(putEventsRequest);
             final List<PendingFlushRequest> failedFlushRequestList = new ArrayList<>();
             if (putEventsResponse.failedEntryCount() > 0) {

@@ -21,8 +21,6 @@ package org.apache.pulsar.io.eventbridge.sink;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.schema.GenericObject;
-import org.apache.pulsar.common.functions.FunctionConfig;
-import org.apache.pulsar.common.io.SinkConfig;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.io.core.Sink;
 import org.apache.pulsar.io.core.SinkContext;
@@ -42,18 +40,13 @@ public class EventBridgeSink implements Sink<GenericObject> {
 
     @Override
     public void open(Map<String, Object> config, SinkContext sinkContext) throws Exception {
-        SinkConfig sinkConfig = sinkContext.getSinkConfig();
-        FunctionConfig.ProcessingGuarantees processingGuarantees = sinkConfig.getProcessingGuarantees();
-        if (processingGuarantees == FunctionConfig.ProcessingGuarantees.EFFECTIVELY_ONCE) {
-            throw new IllegalArgumentException("Processing guarantee 'EFFECTIVELY_ONCE' is not supported");
-        }
-        EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(sinkConfig.getConfigs(), sinkContext);
+        EventBridgeConfig eventBridgeConfig = EventBridgeConfig.load(config, sinkContext);
         EventBridgeClient eventBrClient = EventBridgeClient.builder()
                 .region(Region.of(eventBridgeConfig.getRegion()))
                 .credentialsProvider(eventBridgeConfig.getAwsCredentialsProvider())
                 .build();
-        this.batchEventWriter = new BatchEventWriter(sinkConfig.getName(), eventBridgeConfig, eventBrClient,
-                sinkContext);
+        this.batchEventWriter = new BatchEventWriter("pulsar-aws-eventbridge-sink", eventBridgeConfig,
+                eventBrClient, sinkContext);
         this.recordConvert = new DefaultRecordConvert(eventBridgeConfig.getMetaDataFields());
     }
 
