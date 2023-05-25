@@ -7,11 +7,11 @@ copying data from Pulsar to [Amazon EventBridge](https://aws.amazon.com/eventbri
 
 Currently, AWS EventBridge connector versions (`x.y.z`) are based on Pulsar versions (`x.y.z`).
 
-| AWS EventBridge connector version                                            | Pulsar version                                              | Doc                                                                                                                                                |
-|:-----------------------------------------------------------------------------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
-| [3.0.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases)  | [3.0.0](https://pulsar.apache.org/download/#older-release)  | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-3.0/docs/io-aws-eventbridge-sink.md)    |
-| [2.11.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.11.1](https://pulsar.apache.org/download/#older-release) | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-2.11/docs/io-aws-eventbridge-sink.md)   |
-| [2.10.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.10.4](https://pulsar.apache.org/download/#older-release) | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-2.10.4/docs/io-aws-eventbridge-sink.md) |
+| AWS EventBridge connector version                                            | Pulsar version                                              | Doc                                                                                                                                             |
+|:-----------------------------------------------------------------------------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| [3.0.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases)  | [3.0.0](https://pulsar.apache.org/download/#older-release)  | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-3.0/docs/aws-eventbridge-sink.md)    |
+| [2.11.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.11.1](https://pulsar.apache.org/download/#older-release) | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-2.11/docs/aws-eventbridge-sink.md)   |
+| [2.10.x](https://github.com/streamnative/pulsar-io-aws-eventbridge/releases) | [2.10.4](https://pulsar.apache.org/download/#older-release) | [AWS EventBridge sink connector doc](https://github.com/streamnative/pulsar-io-aws-eventbridge/blob/branch-2.10.4/docs/aws-eventbridge-sink.md) |
 
 ## Project layout
 
