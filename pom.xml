@@ -50,6 +50,7 @@
     <jackson.version>2.12.7.1</jackson.version>
     <lombok.version>1.18.20</lombok.version>
     <pulsar.version>2.11.0.4</pulsar.version>
+    <commons-lang3.version>3.11</commons-lang3.version>
 
     <!-- test dependencies -->
     <testng.version>7.7.0</testng.version>
@@ -136,6 +137,11 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-annotations</artifactId>
         <version>${spotbugs-annotations.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
       <!-- test dependencies -->
       <dependency>
@@ -224,6 +230,10 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java-util</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- test dependencies -->
