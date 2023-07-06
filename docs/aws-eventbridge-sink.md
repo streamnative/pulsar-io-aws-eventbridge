@@ -174,6 +174,50 @@ intervalRetryTimeMs: 1000 //The interval time(milliseconds) for each retry, when
 
 This section describes how to get the AWS EventBridge sink connector.
 
+## Prerequisites
+
+Prerequisites for an AWS EventBridge sink connector connecting to external systems:
+
+- Create [Access Keys](https://docs.aws.amazon.com/powershell/latest/userguide/pstools-appendix-sign-up.html) or [Security Token Service](https://docs.aws.amazon.com/STS/latest/APIReference/welcome.html)
+- Create EventBridge and EventBus in AWS.
+- Create a rule in EventBridge.
+- Ensure that the account has the following permissions to the AWS EventBus. For details, see [permissions for event buses](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-event-bus-perms.html)
+```json
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+
+      ### To grant permissions for an account to use the PutEvents action, include the following, otherwise delete this section: ###
+
+      {
+
+        "Sid": "AllowAccountToPutEvents",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "<ACCOUNT_ID>"
+        },
+        "Action": "events:PutEvents",
+        "Resource": "{EventBusArn}"
+      },
+
+      ### Include the following section to grant permissions to all members of your AWS Organizations to use the PutEvents action ###
+
+      {
+        "Sid": "AllowAllAccountsFromOrganizationToPutEvents",
+        "Effect": "Allow",
+        "Principal": "*",
+        "Action": "events:PutEvents",
+        "Resource": "{EventBusArn}"
+        "Condition": {
+          "StringEquals": {
+            "aws:PrincipalOrgID": "o-yourOrgID"
+          }
+        }
+      }
+    ]
+}
+```
+
 ## Work with Function Worker
 
 You can get the AWS EventBridge sink connector using one of the following methods if you
