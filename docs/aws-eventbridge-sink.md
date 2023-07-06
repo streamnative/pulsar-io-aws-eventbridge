@@ -214,6 +214,7 @@ Prerequisites for an AWS EventBridge sink connector connecting to external syste
           }
         }
       }
+    ]
 }
 ```
 
