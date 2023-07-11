@@ -45,7 +45,7 @@ public class EventBridgeSink implements Sink<GenericObject> {
                 .region(Region.of(eventBridgeConfig.getRegion()))
                 .credentialsProvider(eventBridgeConfig.getAwsCredentialsProvider())
                 .build();
-        this.batchEventWriter = new BatchEventWriter("pulsar-aws-eventbridge-sink", eventBridgeConfig,
+        this.batchEventWriter = new BatchEventWriter(sinkContext.getSinkName(), eventBridgeConfig,
                 eventBrClient, sinkContext);
         this.recordConvert = new DefaultRecordConvert(eventBridgeConfig.getMetaDataFields());
     }
