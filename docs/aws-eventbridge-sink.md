@@ -246,7 +246,7 @@ To build the AWS EventBridge sink connector from the source code, follow these s
 
    ```bash
    ls target
-   pulsar-io-aws-eventbridge-{{connector:version}}.nar
+   pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.nar
    ```
 
 ## Work with Function Mesh
@@ -291,7 +291,7 @@ use [Pulsar Function Worker](https://pulsar.apache.org/docs/en/functions-worker/
    ```json
     {
         "name": "eventbridge-sink",
-        "archive": "connectors/pulsar-io-aws-eventbridge-{{connector:version}}.nar",
+        "archive": "connectors/pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.nar",
         "tenant": "public",
         "namespace": "default",
         "inputs": [
@@ -311,7 +311,7 @@ use [Pulsar Function Worker](https://pulsar.apache.org/docs/en/functions-worker/
 
     ```yaml
      name: eventbridge-sink
-     archive: 'connectors/pulsar-io-aws-eventbridge-{{connector:version}}.nar'
+     archive: 'connectors/pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.nar'
      tenant: public
      namespace: default
      inputs:
@@ -340,7 +340,7 @@ kind: Sink
 metadata:
   name: aws-eventbridge-sink-sample
 spec:
-  image: streamnative/pulsar-io-aws-eventbridge:{{connector:version}}
+  image: streamnative/pulsar-io-aws-eventbridge:2.10.4.5-5ce22c
   replicas: 1
   maxReplicas: 1
   input:
@@ -361,7 +361,7 @@ spec:
     cpu: "0.1"
     memory: 1G
   java:
-    jar: connectors/pulsar-io-aws-eventbridge-{{connector:version}}.jar
+    jar: connectors/pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.jar
   clusterName: test-pulsar
   autoAck: false
 ```
@@ -385,14 +385,14 @@ You can use the AWS EventBridge sink connector with Function Worker or Function 
     ```
     PULSAR_HOME/bin/pulsar-admin sinks localrun \
     --sink-config-file <aws-eventbridge-sink-config.yaml>
-    --archive <pulsar-io-aws-eventbridge-{{connector:version}}.nar>
+    --archive <pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.nar>
     ```
 
    Or, you can create a connector for the Pulsar cluster.
     ```
     PULSAR_HOME/bin/pulsar-admin sinks create \
     --sink-config-file <aws-eventbridge-sink-config.yaml>
-    --archive <pulsar-io-aws-eventbridge-{{connector:version}}.nar>
+    --archive <pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.nar>
     ```
 
 3. Send messages to a Pulsar topic.
@@ -460,7 +460,7 @@ Mesh.
    metadata:
       name: aws-eventbridge-sink-sample
    spec:
-      image: streamnative/pulsar-io-aws-eventbridge:{{connector:version}}
+      image: streamnative/pulsar-io-aws-eventbridge:2.10.4.5-5ce22c
       replicas: 1
       maxReplicas: 1
       input:
@@ -481,7 +481,7 @@ Mesh.
          cpu: "0.1"
          memory: 1G
       java:
-         jar: connectors/pulsar-io-aws-eventbridge-{{connector:version}}.jar
+         jar: connectors/pulsar-io-aws-eventbridge-2.10.4.5-5ce22c.jar
       clusterName: test-pulsar
       autoAck: false
    ```
